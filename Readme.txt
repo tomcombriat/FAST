@@ -35,6 +35,8 @@ in a command prompt.
 
 usage:
 
-./FAST input_video output_file -supp_arg
+./FAST input_video output_txt_file -supp_arg
+
+-supp_arg can only be "-test" for now. Executed with -test, the program will show you which particles it found for each step, thus slowering the program.
 
 
