@@ -39,7 +39,7 @@ using namespace std;
 int main( int argc, char** argv )
 {
 
-
+  system("clear");
   
   if( argc < 3)
     {
@@ -69,17 +69,10 @@ int main( int argc, char** argv )
   vector<Track> tracks; 
   char key;
   unsigned int i=0,kernel_size=3,derivative_size,gap;
-  cout<<"    Blur size (positive and odd) >>  ";
-  cin>>kernel_size;
-  cout<<"    Derivative size (positive and odd) >>  ";
-  cin>>derivative_size;
-  cout<<"    Search radius (positive) >>  ";
-  cin>>search_radius;
+ 
+  cout<<"  Press enter to continue...\n\n";
+  cin.ignore();
 
-  log<<argv[0]<<" "<<argv[1]<<" "<<argv[2]<<" "<<mode_test<<endl;
-  log<<"Blur size = "<<kernel_size<<"\nDerivative size = "<<derivative_size<<"\nSearch radius = "<<search_radius<<endl;
-
-  
 
   VideoCapture video(argv[1]);
 
@@ -104,11 +97,15 @@ int main( int argc, char** argv )
  
 
   namedWindow( "Display", WINDOW_NORMAL);// Create a window for display.
-  VideoWriter output_video("output_file.avi",video.get(CV_CAP_PROP_FOURCC),200,Size(video.get(CV_CAP_PROP_FRAME_WIDTH),video.get(CV_CAP_PROP_FRAME_HEIGHT)),true);
+  
 
-  bool new_background;
-  cout<<"Do you want to calculate a new background ? (0 or 1) >>  ";
+  bool new_background=true;
+
+  /*
+  cout<<"Do you want to calculate a new background? (If the last time you have executed this program, it was on the video you (0 or 1) >>  ";
   cin>>new_background;
+  */
+
   
   mean_img.convertTo(mean_img,6);
   if( new_background)
@@ -137,11 +134,20 @@ int main( int argc, char** argv )
       mean_img=input_bg.clone();
     }
   
-  cout<<"\nComputing LOG filter..."<<endl;
   
   mean_img.convertTo(mean_img,0);
 
+  cout<<"\n\n  LOG detector: informations required:\n";
 
+ cout<<"    Blur size (positive and odd) >>  ";
+  cin>>kernel_size;
+  cout<<"    Derivative size (positive and odd) >>  ";
+  cin>>derivative_size;
+  cout<<"    Search radius (positive) >>  ";
+  cin>>search_radius;
+
+  log<<argv[0]<<" "<<argv[1]<<" "<<argv[2]<<" "<<mode_test<<endl;
+  log<<"Blur size = "<<kernel_size<<"\nDerivative size = "<<derivative_size<<"\nSearch radius = "<<search_radius<<endl;
 	
   VideoCapture video2(argv[1]);
   video2.read(img);
@@ -156,7 +162,7 @@ int main( int argc, char** argv )
   while (!satisfied)
     {
 
-      cout<<"    Threshold >> ";
+      cout<<"    Threshold (integer between 0 and 255) >> ";
       cin>>_threshold;
       threshold(LOG_img[0],thresholded,_threshold,255,THRESH_BINARY);
       imshow("Display", thresholded);
@@ -174,16 +180,16 @@ int main( int argc, char** argv )
 
   find_particules(thresholded,0,points[0]);
   // test(0);
-  cout<<"  First image characteristics: "<<endl;
+  cout<<"\n  First image characteristics: "<<endl;
   cout<<"    - number of detected particles: "<<points[0].size()<<endl;
-  cout<<"    - mean size/std : "<<points_mean(points[0])<<"  "<<points_std(points[0])<<endl;
+  cout<<"    - mean size/std: "<<points_mean(points[0])<<"  "<<points_std(points[0])<<endl;
 
       
   while (!satisfied)
     {
       imshow("Display",thresholded);
       cv::waitKey(50);
-      cout<<"     Area min/max >> ";
+      cout<<"     Area min/max (integers, space separated. Ex: '2 20') >> ";
       cin>>area_min>>area_max;
       Mat tamp=img.clone();
       for (int i=0;i<points[0].size();i++)
