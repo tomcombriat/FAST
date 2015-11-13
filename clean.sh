@@ -1,4 +1,4 @@
-rm *.txt
+rm CMakeCake.txt
 rm -r CMakeFiles
 rm cmake_install.cmake
 rm FAST

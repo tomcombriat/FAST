@@ -19,7 +19,7 @@ Welcome to FAST (Fast and Simple Tracker)! FAST is a particle tracker developped
 
 
 //////////////
-HOW TO INSTALL
+HOW TO INSTALL ON LINUX
 /////////////
 FAST uses cmake and opencv, after installing these softwares you can compile the program:
 
