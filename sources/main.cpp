@@ -34,6 +34,53 @@
 using namespace cv;
 using namespace std;
 
+//global variable
+int _threshold,area_max=1000,area_min=0;
+Mat thresholded,LOG_img,img;
+
+vector<Points> * points;
+
+
+
+void threshold_TB(int, void *)
+{
+  threshold(LOG_img,thresholded,_threshold,255,THRESH_BINARY);
+  imshow("Display", thresholded);  
+}
+
+void area_TB_min(int, void *)
+{
+  Mat tamp=img.clone();
+  for (int i=0;i<points[0].size();i++)
+    {
+      if (points[0][i].area()>area_min && points[0][i].area()<area_max)
+	{
+	  circle(tamp,Point(points[0][i].center_position()[1],points[0][i].center_position()[0]),(points[0][i].area()/2),Scalar(0xFFFF),1,8,0);
+	}
+    }      
+  imshow("Display",tamp);
+}
+
+
+void area_TB_max(int, void *)
+{
+  Mat tamp=img.clone();
+  for (int i=0;i<points[0].size();i++)
+    {
+      if (points[0][i].area()>area_min && points[0][i].area()<area_max)
+	{
+	  circle(tamp,Point(points[0][i].center_position()[1],points[0][i].center_position()[0]),(points[0][i].area()/2),Scalar(0xFFFF),1,8,0);
+	}
+    }      
+  imshow("Display",tamp);
+}
+
+
+
+
+
+
+
 
 
 int main( int argc, char** argv )
@@ -62,10 +109,13 @@ int main( int argc, char** argv )
 
   cout<<"\n\n    Welcome to FAST (a Fast And Simple Tracker), developped at the LIPhy (Grenoble - France).\n    This program is distributed under the licence GNU GPLv3.\n\n\n";
 
+
+
+
   fstream sortie(argv[2],ios::out);
   fstream log("log.txt",ios::out);  //for further developments
   double search_radius=0;
-  unsigned int NB_remanence=50,area_max=1000,area_min=0;
+  unsigned int NB_remanence=50;
   vector<Track> tracks;
   char key;
   unsigned int i=0,kernel_size=3,derivative_size,gap;
@@ -83,23 +133,26 @@ int main( int argc, char** argv )
     }
   else
     {
-      cout<<"An error occured while opeing the source file... \nNow exiting"<<endl;
+      cout<<"An error occured while opening the source file... \nNow exiting"<<endl;
       return 0;
     }
 
 
 
   int NB_Frame=video.get(CV_CAP_PROP_FRAME_COUNT);
-  
+ 
   cout<<NB_Frame<<" images to analyse"<<endl;
   Mat * output;
   output=new Mat[NB_Frame+1];
 
+  points=new vector<Points>[NB_Frame];
 
-  Mat blurred_img,LOG_img[1],mean_img,frame32f,tamp,thresholded,img,input_bg;
+
+  Mat blurred_img,mean_img,frame32f,tamp,input_bg;
 
 
   namedWindow( "Display", WINDOW_NORMAL);// Create a window for display.
+  
 
 
   bool new_background=true;
@@ -158,33 +211,21 @@ int main( int argc, char** argv )
 
   GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
   cvtColor(blurred_img, blurred_img, CV_RGB2GRAY);
-  Laplacian(blurred_img,LOG_img[0],CV_32F,derivative_size,-1,120,BORDER_DEFAULT);
+  Laplacian(blurred_img,LOG_img,CV_32F,derivative_size,-1,120,BORDER_DEFAULT);
 
   bool satisfied=false;
-  double _threshold;
-  while (!satisfied)
-    {
 
-      cout<<"    Threshold (integer between 0 and 255) >> ";
-      cin>>_threshold;
-      threshold(LOG_img[0],thresholded,_threshold,255,THRESH_BINARY);
-      imshow("Display", thresholded);
-      cv::waitKey(50);
-      double test_input=140;
-      while (test_input != 0 || test_input != 1)
-	{	  
-	  cout << "    Satisfied ? (0 or 1) >> ";
-	  cin >> test_input;
-	  if (test_input != 0 || test_input != 1) cout << "    Expecting 0 or 1... Got " << test_input << endl;
-	}
-      satisfied = test_input;
+    cout << "\n  Use the cursor on the image to set the threshold (press a key when you are done)\n";
+  createTrackbar("Threshold_set \n(press enter to valid)", "Display", &_threshold, 255, threshold_TB );
+  threshold_TB(_threshold,0);
+  waitKey(0);
 
-    }
+
+    
   //cvDestroyWindow("Display");
   satisfied=false;
 
-  vector<Points> *points;
-  points=new vector<Points>[NB_Frame];
+
 
   find_particules(thresholded,0,points[0]);
   // test(0);
@@ -193,31 +234,15 @@ int main( int argc, char** argv )
   cout<<"    - mean size/std: "<<points_mean(points[0])<<"  "<<points_std(points[0])<<endl;
 
 
-  while (!satisfied)
-    {
-      imshow("Display",thresholded);
-      cv::waitKey(50);
-      cout<<"     Area min/max (integers, space separated. Ex: '2 20') >> ";
-      cin>>area_min>>area_max;
-      Mat tamp=img.clone();
-      for (int i=0;i<points[0].size();i++)
-	{
-	  if (points[0][i].area()>area_min && points[0][i].area()<area_max)
-	    {
-	      circle(tamp,Point(points[0][i].center_position()[1],points[0][i].center_position()[0]),(points[0][i].area()/2),Scalar(0xFFFF),1,8,0);
-	    }
-	}
-      imshow("Display",tamp);
-      cv::waitKey(50);
-      double test_input = 140;
-      while (test_input != 0 || test_input != 1)
-	{
-	  cout << "    Satisfied ? (0 or 1) >> ";
-	  cin >> test_input;
-	  if (test_input != 0 || test_input != 1) cout << "    Expecting 0 or 1... Got " << test_input << endl;
-	}
-      satisfied = test_input;
-    }
+
+  imshow("Display",tamp);
+    cout << "\n  Use the cursor on the image to set the min/max size of the particles (press a key when you are done)\n";
+  createTrackbar("Area min \n(press enter to valid)", "Display", &area_min, 1000, area_TB_min);
+  createTrackbar("Area max \n(press enter to valid)", "Display", &area_max, 1000, area_TB_max);
+  waitKey(0);
+
+	    
+  //    }
   cout<<"     Gap closing (null or positive integer) >> ";
   cin>>gap;
 
@@ -234,8 +259,8 @@ int main( int argc, char** argv )
 
       GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
       cvtColor(blurred_img, blurred_img, CV_RGB2GRAY);
-      Laplacian(blurred_img,LOG_img[0],CV_32F,derivative_size,-1,120,BORDER_DEFAULT);
-      threshold(LOG_img[0],thresholded,_threshold,255,THRESH_BINARY);
+      Laplacian(blurred_img,LOG_img,CV_32F,derivative_size,-1,120,BORDER_DEFAULT);
+      threshold(LOG_img,thresholded,_threshold,255,THRESH_BINARY);
       find_particules(thresholded,0,points[i]);
 
       if (mode_test)
