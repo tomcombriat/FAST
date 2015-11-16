@@ -1,18 +1,18 @@
 /*
 
-Copyright 2014,2015 Thomas Combriat
-   This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+  Copyright 2014,2015 Thomas Combriat
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 */
@@ -90,8 +90,8 @@ int main( int argc, char** argv )
 
 
   int NB_Frame=video.get(CV_CAP_PROP_FRAME_COUNT);
-
-cout<<NB_Frame<<" images to analyse"<<endl;
+  
+  cout<<NB_Frame<<" images to analyse"<<endl;
   Mat * output;
   output=new Mat[NB_Frame+1];
 
@@ -105,8 +105,8 @@ cout<<NB_Frame<<" images to analyse"<<endl;
   bool new_background=true;
 
   /*
-  cout<<"Do you want to calculate a new background? (If the last time you have executed this program, it was on the video you (0 or 1) >>  ";
-  cin>>new_background;
+    cout<<"Do you want to calculate a new background? (If the last time you have executed this program, it was on the video you (0 or 1) >>  ";
+    cin>>new_background;
   */
 
 
@@ -142,7 +142,7 @@ cout<<NB_Frame<<" images to analyse"<<endl;
 
   cout<<"\n\n  LOG detector: informations required:\n";
 
- cout<<"    Blur size (positive and odd) >>  ";
+  cout<<"    Blur size (positive and odd) >>  ";
   cin>>kernel_size;
   cout<<"    Derivative size (positive and odd) >>  ";
   cin>>derivative_size;
@@ -170,10 +170,15 @@ cout<<NB_Frame<<" images to analyse"<<endl;
       threshold(LOG_img[0],thresholded,_threshold,255,THRESH_BINARY);
       imshow("Display", thresholded);
       cv::waitKey(50);
+      double test_input=140;
+      while (test_input != 0 || test_input != 1)
+	{	  
+	  cout << "    Satisfied ? (0 or 1) >> ";
+	  cin >> test_input;
+	  if (test_input != 0 || test_input != 1) cout << "    Expecting 0 or 1... Got " << test_input << endl;
+	}
+      satisfied = test_input;
 
-      cout<<"    Satisfied ? (0 or 1) >> ";
-      cin>>satisfied;
-      //cvDestroyWindow("Display");
     }
   //cvDestroyWindow("Display");
   satisfied=false;
@@ -204,8 +209,14 @@ cout<<NB_Frame<<" images to analyse"<<endl;
 	}
       imshow("Display",tamp);
       cv::waitKey(50);
-      cout<<"    Satisfied ? (0 or 1) >> ";
-      cin>>satisfied;
+      double test_input = 140;
+      while (test_input != 0 || test_input != 1)
+	{
+	  cout << "    Satisfied ? (0 or 1) >> ";
+	  cin >> test_input;
+	  if (test_input != 0 || test_input != 1) cout << "    Expecting 0 or 1... Got " << test_input << endl;
+	}
+      satisfied = test_input;
     }
   cout<<"     Gap closing (null or positive integer) >> ";
   cin>>gap;
@@ -234,7 +245,7 @@ cout<<NB_Frame<<" images to analyse"<<endl;
 	    {
 	      if (points[i][j].area()>area_min && points[i][j].area()<area_max)
 		{
-	      circle(tamp,Point(points[i][j].center_position()[1],points[i][j].center_position()[0]),sqrt(points[i][j].area()),Scalar(0xFFFF),1,8,0);
+		  circle(tamp,Point(points[i][j].center_position()[1],points[i][j].center_position()[0]),sqrt(points[i][j].area()),Scalar(0xFFFF),1,8,0);
 		}}
 
 	  imshow("Display",tamp);
