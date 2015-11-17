@@ -215,10 +215,15 @@ int main( int argc, char** argv )
 
   bool satisfied=false;
 
-    cout << "\n  Use the cursor on the image to set the threshold (press a key when you are done)\n";
+    cout << "\n  Use the cursor on the image to set the threshold (press enter when you are done)\n";
   createTrackbar("Threshold_set \n(press enter to valid)", "Display", &_threshold, 255, threshold_TB );
   threshold_TB(_threshold,0);
-  waitKey(0);
+ int c= 0;
+
+
+ while (c!=1048586) c=waitKey(0);
+
+ c=0;
 
 
     
@@ -236,11 +241,12 @@ int main( int argc, char** argv )
 
 
   imshow("Display",tamp);
-    cout << "\n  Use the cursor on the image to set the min/max size of the particles (press a key when you are done)\n";
+    cout << "\n  Use the cursor on the image to set the min/max size of the particles (press enter when you are done)\n";
   createTrackbar("Area min \n(press enter to valid)", "Display", &area_min, 1000, area_TB_min);
   createTrackbar("Area max \n(press enter to valid)", "Display", &area_max, 1000, area_TB_max);
-  waitKey(0);
 
+  
+ while (c!=1048586) c=waitKey(0);
 	    
   //    }
   cout<<"     Gap closing (null or positive integer) >> ";
