@@ -201,8 +201,19 @@ void link_particules(vector<Points> * & points,vector<Track> & tracks,double sea
 
 
 
-void link_particules(vector<Points> * & points,vector<Track> & tracks,double search_radius,int NB_frames, int size_min, int size_max,unsigned int gap)
+
+
+
+void link_particules(vector<Points> * & points,vector<Track> & tracks,double search_radius,int NB_frames, int size_min, int size_max,unsigned int gap, unsigned int strategy)
 {
+
+  /*///////////////////////////////STRATEGY//////////////////////////////
+  if 0 : neirest neighbor
+if 1 : linear prediction
+if 2 : quadratic predicition
+  */
+
+  
   double expected_position[2];
   unsigned int frame=0;
   //initialisation
@@ -232,8 +243,30 @@ void link_particules(vector<Points> * & points,vector<Track> & tracks,double sea
 	    {
 	      //Linking of particules already linked in the precedent frame
 	      //TO change in further developments
-	      expected_position[0]=tracks[j].X.back();
-	      expected_position[1]=tracks[j].Y.back();
+	      if (strategy==1)
+		{
+		  if (tracks[j].X.size()>1)
+		    {
+		      int size=tracks[j].X.size();
+		      expected_position[0]=(tracks[j].X.at(size-1)-tracks[j].X.at(size-2))/((tracks[j].Frame.at(size-1)-tracks[j].Frame.at(size-2)))+tracks[j].X.at(size-1);
+		      expected_position[1]=(tracks[j].Y.at(size-1)-tracks[j].Y.at(size-2))/((tracks[j].Frame.at(size-1)-tracks[j].Frame.at(size-2)))+tracks[j].Y.at(size-1);
+
+		    }
+		  else
+		    {
+		  expected_position[0]=tracks[j].X.back();
+		  expected_position[1]=tracks[j].Y.back();
+		    }
+		}
+	     else if (strategy==0)
+		{
+		  expected_position[0]=tracks[j].X.back();
+		  expected_position[1]=tracks[j].Y.back();
+		}
+
+
+
+		       
 	      Points * candidate;
 	      double candidate_cost=search_radius+1;
 	      for (unsigned int k=0;k<points[i+1].size();k++) //loop in particules in next frame

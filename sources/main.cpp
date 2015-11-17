@@ -118,7 +118,7 @@ int main( int argc, char** argv )
   unsigned int NB_remanence=50;
   vector<Track> tracks;
   char key;
-  unsigned int i=0,kernel_size=3,derivative_size,gap;
+  unsigned int i=0,kernel_size=3,derivative_size,gap,strategy;
 
   cout<<"  Press enter to continue...\n\n";
   cin.ignore();
@@ -248,13 +248,16 @@ int main( int argc, char** argv )
   
  while (c!=1048586) c=waitKey(0);
 	    
-  //    }
-  cout<<"     Gap closing (null or positive integer) >> ";
-  cin>>gap;
-
-  i=1;
-  cout<<"  Detection..."<<endl;
-  while(i<NB_Frame)
+ //    }
+ 
+ cout<<"\n     Do you want to use the predictive tracker? (Useful if your particles are more or less deterministic) (0 or 1) >> ";
+ cin>>strategy;
+ cout<<"\n     Gap closing (null or positive integer) >> ";
+ cin>>gap;
+ 
+ i=1;
+ cout<<"  Detection..."<<endl;
+ while(i<NB_Frame)
     {
       video2.read(img);
       if (i%100==0)
@@ -287,9 +290,9 @@ int main( int argc, char** argv )
     }
 
   cout<<endl<<endl<<"  Linking particles..."<<endl;
-  link_particules(points,tracks,search_radius, NB_Frame,0,100,gap);
+  link_particules(points,tracks,search_radius, NB_Frame,0,100,gap,0);
 
-  cout<<endl<<endl<<"Done!  "<<tracks.size()<<" tracks have benn created!"<<endl;
+  cout<<endl<<endl<<"Done!  "<<tracks.size()<<" tracks have been created!"<<endl;
 
 
   cout<<"Écriture des fichiers..."<<endl;
