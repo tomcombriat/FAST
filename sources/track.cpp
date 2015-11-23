@@ -37,6 +37,7 @@ Track::Track(double x, double y, int frame)
   Y.push_back(y);
   Frame.push_back(frame);
   lenght=1;
+  
 }
 
 
@@ -47,6 +48,28 @@ void Track::add_point(double x, double y, int frame)
   Frame.push_back(frame);
   lenght++;
 }
+
+
+Track::Track(double x, double y, int frame,int size)
+{
+  X.push_back(x);
+  Y.push_back(y);
+  Frame.push_back(frame);
+  lenght=1;
+  size_P.push_back(size);
+  
+}
+
+
+void Track::add_point(double x, double y, int frame,int size)
+{
+  X.push_back(x);
+  Y.push_back(y);
+  Frame.push_back(frame);
+    size_P.push_back(size);
+  lenght++;
+}
+
 
 int Track::get_lenght()
 {

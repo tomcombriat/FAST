@@ -296,7 +296,7 @@ int main( int argc, char** argv )
 
 
   cout<<"Écriture des fichiers..."<<endl;
-  sortie<<"#Tracks_ID,X,Y,T"<<endl;
+  sortie<<"#Tracks_ID,X,Y,T,size"<<endl;
   for (unsigned int i=0;i<tracks.size();i++)
     {
       //      cout<<tracks[i].get_lenght()<<endl;
@@ -304,7 +304,7 @@ int main( int argc, char** argv )
 	{
 	  for (unsigned int j=0;j<tracks[i].get_lenght();j++)
 	    {
-	      sortie<<i<<","<<tracks[i].Y.at(j)<<","<<tracks[i].X.at(j)<<","<<tracks[i].Frame.at(j)<<endl;
+	      sortie<<i<<","<<tracks[i].Y.at(j)<<","<<tracks[i].X.at(j)<<","<<tracks[i].Frame.at(j)<<" "<<tracks[i].size_P.at(j)<<endl;
 	    }
 	}
     }

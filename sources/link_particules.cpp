@@ -221,7 +221,8 @@ if 2 : quadratic predicition
     {
       if (points[0].at(i).area()>=size_min && points[0].at(i).area()<=size_max)
 	{
-	  tracks.push_back(Track(points[0].at(i).center_position()[0],points[0].at(i).center_position()[1],0));
+	  tracks.push_back(Track(points[0].at(i).center_position()[0],points[0].at(i).center_position()[1],0,points[0].at(i).area()));
+	  cout<<points[0].at(i).area()<<endl;
 	  points[0].at(i).track_index=i;
 	}
     }
@@ -292,6 +293,7 @@ if 2 : quadratic predicition
 	      tracks[j].X.push_back(candidate->center_position()[0]);
 	      tracks[j].Y.push_back(candidate->center_position()[1]);
 	      tracks[j].Frame.push_back(i+1);
+	      tracks[j].size_P.push_back(candidate->area());
 	      candidate->track_index=j;
 	      // cout<<"Track "<<j<<" found a match at position "<<candidate->center[0]<<" "<<candidate->center[1]<<endl;
 	      }
@@ -334,8 +336,8 @@ if 2 : quadratic predicition
 		}//end loop particules in next frame
 	      if (candidate_cost<search_radius+1)
 		{
-	      tracks.push_back(Track(points[i].at(j).center_position()[0],points[i].at(j).center_position()[1],i));
-	      tracks.back().add_point(candidate->center_position()[0],candidate->center_position()[1],i+1);
+		  tracks.push_back(Track(points[i].at(j).center_position()[0],points[i].at(j).center_position()[1],i,points[i].at(j).area()));
+		  tracks.back().add_point(candidate->center_position()[0],candidate->center_position()[1],i+1,candidate->area());
 	      candidate->track_index=tracks.size();
 	      
 	      

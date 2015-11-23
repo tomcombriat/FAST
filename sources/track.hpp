@@ -26,8 +26,10 @@ class Track
 public:
 
   Track(double x, double y, int frame);
+  Track(double x, double y, int frame,int size);
   void add_point(double x, double y, int frame);
-  std::vector<double> X,Y;
+  void add_point(double x, double y, int frame,int size);
+  std::vector<double> X,Y,size_P;
   std::vector<int> Frame;
   int lenght;
   int get_lenght();
