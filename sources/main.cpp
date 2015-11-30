@@ -108,12 +108,15 @@ int main( int argc, char** argv )
 
 
   cout<<"\n\n    Welcome to FAST (a Fast And Simple Tracker), developped at the LIPhy (Grenoble - France).\n    This program is distributed under the licence GNU GPLv3.\n\n\n";
+string argv1_old;
+fstream log_i("log.txt",ios::in);
+ log_i>>argv1_old;
 
+ // cout<<argv1_old<<endl;
 
 
 
   fstream sortie(argv[2],ios::out);
-  fstream log("log.txt",ios::out);  //for further developments
   double search_radius=0;
   unsigned int NB_remanence=50;
   vector<Track> tracks;
@@ -122,6 +125,10 @@ int main( int argc, char** argv )
 
   cout<<"  Press enter to continue...\n\n";
   cin.ignore();
+
+
+
+  
 
 
   VideoCapture video(argv[1]);
@@ -154,9 +161,12 @@ int main( int argc, char** argv )
   namedWindow( "Display", WINDOW_NORMAL);// Create a window for display.
   
 
-
   bool new_background=true;
-
+  if (argv[1]==argv1_old) 
+    {
+      new_background=false;
+      cout<<"\n   An old background for your video has been detected!\n";
+    }
   /*
     cout<<"Do you want to calculate a new background? (If the last time you have executed this program, it was on the video you (0 or 1) >>  ";
     cin>>new_background;
@@ -189,6 +199,10 @@ int main( int argc, char** argv )
       input_bg=imread("background.jpg",-1);
       mean_img=input_bg.clone();
     }
+
+
+fstream log("log.txt",ios::out);  //for further developments
+  log<<argv[1]<<endl;
 
 
   mean_img.convertTo(mean_img,0);
