@@ -1,18 +1,18 @@
 /*
 
-Copyright 2014,2015 Thomas Combriat
-   This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+  Copyright 2014,2015 Thomas Combriat
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 */
@@ -48,35 +48,35 @@ using namespace cv;
 //  **********************************************/
 
 
-  double cost_function(double * current, double * expected)
-  {
+double cost_function(double * current, double * expected)
+{
   return (sqrt((current[0]-expected[0])*(current[0]-expected[0])+(current[1]-expected[1])*(current[1]-expected[1])));
-  }
+}
 
 
 // /***********************************************
 //  ************IN AREA****************************
 //  **********************************************/
 
-  bool in_area(double * current, double * expected, double radius)
-  {
+bool in_area(double * current, double * expected, double radius)
+{
   if (sqrt((current[0]-expected[0])*(current[0]-expected[0])+(current[1]-expected[1])*(current[1]-expected[1]))<radius) return true;
   else return false;
-  }
+}
 
 /*
-double cost_function(int * current, double * expected)
-{
+  double cost_function(int * current, double * expected)
+  {
   return sqrt((current[0]-expected[0])*(current[0]-expected[0])+(current[1]-expected[1])*(current[1]-expected[1]));
-}
+  }
 */
 
 // /***********************************************
 //  ************IN AREA****************************
 //  **********************************************/
 /*
-bool in_area(int * current, double * expected, double radius)
-{
+  bool in_area(int * current, double * expected, double radius)
+  {
   if (sqrt((current[0]-expected[0])*(current[0]-expected[0])+(current[1]-expected[1])*(current[1]-expected[1]))<radius) return true;
   else return false;
   
@@ -135,9 +135,9 @@ void link_particules(vector<Points> * & points,vector<Track> & tracks,double sea
 	      if (candidate_cost<search_radius+1){
 		tracks[j].X.push_back(candidate->center_position()[0]);
 		tracks[j].Y.push_back(candidate->center_position()[1]);
-	      tracks[j].Frame.push_back(i+1);
-	      candidate->track_index=j;
-	      // cout<<"Track "<<j<<" found a match at position "<<candidate->center[0]<<" "<<candidate->xcenter[1]<<endl;
+		tracks[j].Frame.push_back(i+1);
+		candidate->track_index=j;
+		// cout<<"Track "<<j<<" found a match at position "<<candidate->center[0]<<" "<<candidate->xcenter[1]<<endl;
 	      }
 	    }  
 	} //end loop on tracks of frame N
@@ -179,12 +179,12 @@ void link_particules(vector<Points> * & points,vector<Track> & tracks,double sea
 	      if (candidate_cost<search_radius+1)
 		{
 		  tracks.push_back(Track(points[i].at(j).center_position()[0],points[i].at(j).center_position()[1],i));
-	      tracks.back().add_point(candidate->center_position()[0],candidate->center_position()[1],i+1);
-	      candidate->track_index=tracks.size();
+		  tracks.back().add_point(candidate->center_position()[0],candidate->center_position()[1],i+1);
+		  candidate->track_index=tracks.size();
 	      
 	      
-	      //cout<<"Particules in "<<points[i].at(j).center[0]<<" "<<points[i].at(j).center[1]<<" @ "<<i<<" found a match in "<<candidate->center[0]<<" "<<candidate->center[1]<<"  New track n : "<<candidate->track_index<<endl;
-	      //test(7);
+		  //cout<<"Particules in "<<points[i].at(j).center[0]<<" "<<points[i].at(j).center[1]<<" @ "<<i<<" found a match in "<<candidate->center[0]<<" "<<candidate->center[1]<<"  New track n : "<<candidate->track_index<<endl;
+		  //test(7);
 		}
 	      //test(8);
 	    } //not already attributed
@@ -204,13 +204,13 @@ void link_particules(vector<Points> * & points,vector<Track> & tracks,double sea
 
 
 
-void link_particules(vector<Points> * & points,vector<Track> & tracks,double search_radius,int NB_frames, int size_min, int size_max,unsigned int gap, unsigned int strategy)
+void link_particules(vector<Points> * & points,vector<Track> & tracks,double search_radius,int NB_frames, int size_min, int size_max,unsigned int gap, unsigned int strategy, double flow_x, double flow_y)
 {
 
   /*///////////////////////////////STRATEGY//////////////////////////////
-  if 0 : neirest neighbor
-if 1 : linear prediction
-if 2 : quadratic predicition
+    if 0 : neirest neighbor
+    if 1 : linear prediction
+    if 2 : quadratic predicition
   */
 
   
@@ -222,7 +222,7 @@ if 2 : quadratic predicition
       if (points[0].at(i).area()>=size_min && points[0].at(i).area()<=size_max)
 	{
 	  tracks.push_back(Track(points[0].at(i).center_position()[0],points[0].at(i).center_position()[1],0,points[0].at(i).area()));
-	  cout<<points[0].at(i).area()<<endl;
+	  //cout<<points[0].at(i).area()<<endl;
 	  points[0].at(i).track_index=i;
 	}
     }
@@ -249,20 +249,20 @@ if 2 : quadratic predicition
 		  if (tracks[j].X.size()>1)
 		    {
 		      int size=tracks[j].X.size();
-		      expected_position[0]=(tracks[j].X.at(size-1)-tracks[j].X.at(size-2))/((tracks[j].Frame.at(size-1)-tracks[j].Frame.at(size-2)))+tracks[j].X.at(size-1);
-		      expected_position[1]=(tracks[j].Y.at(size-1)-tracks[j].Y.at(size-2))/((tracks[j].Frame.at(size-1)-tracks[j].Frame.at(size-2)))+tracks[j].Y.at(size-1);
+		      expected_position[0]=(tracks[j].X.at(size-1)-tracks[j].X.at(size-2))/((tracks[j].Frame.at(size-1)-tracks[j].Frame.at(size-2)))+tracks[j].X.at(size-1)+flow_x;
+		      expected_position[1]=(tracks[j].Y.at(size-1)-tracks[j].Y.at(size-2))/((tracks[j].Frame.at(size-1)-tracks[j].Frame.at(size-2)))+tracks[j].Y.at(size-1)+flow_y;
 
 		    }
 		  else
 		    {
-		  expected_position[0]=tracks[j].X.back();
-		  expected_position[1]=tracks[j].Y.back();
+		      expected_position[0]=tracks[j].X.back()+flow_x;
+		      expected_position[1]=tracks[j].Y.back()+flow_y;
 		    }
 		}
-	     else if (strategy==0)
+	      else if (strategy==0)
 		{
-		  expected_position[0]=tracks[j].X.back();
-		  expected_position[1]=tracks[j].Y.back();
+		  expected_position[0]=tracks[j].X.back()+flow_x;
+		  expected_position[1]=tracks[j].Y.back()+flow_y;
 		}
 
 
@@ -290,12 +290,12 @@ if 2 : quadratic predicition
 		    }//end if not already allocated
 		}//end loop particules in next frame
 	      if (candidate_cost<search_radius+1){
-	      tracks[j].X.push_back(candidate->center_position()[0]);
-	      tracks[j].Y.push_back(candidate->center_position()[1]);
-	      tracks[j].Frame.push_back(i+1);
-	      tracks[j].size_P.push_back(candidate->area());
-	      candidate->track_index=j;
-	      // cout<<"Track "<<j<<" found a match at position "<<candidate->center[0]<<" "<<candidate->center[1]<<endl;
+		tracks[j].X.push_back(candidate->center_position()[0]);
+		tracks[j].Y.push_back(candidate->center_position()[1]);
+		tracks[j].Frame.push_back(i+1);
+		tracks[j].size_P.push_back(candidate->area());
+		candidate->track_index=j;
+		// cout<<"Track "<<j<<" found a match at position "<<candidate->center[0]<<" "<<candidate->center[1]<<endl;
 	      }
 	    }  
 	} //end loop on tracks of frame N
@@ -307,8 +307,8 @@ if 2 : quadratic predicition
 	  // test(j);
 	  if (points[i].at(j).track_index==-1)
 	    {
-	      expected_position[0]=points[i].at(j).center_position()[0];
-	      expected_position[1]=points[i].at(j).center_position()[1];
+	      expected_position[0]=points[i].at(j).center_position()[0]+flow_x;
+	      expected_position[1]=points[i].at(j).center_position()[1]+flow_y;
 	      Points * candidate;
 	      double candidate_cost=search_radius+1;
 
@@ -338,13 +338,9 @@ if 2 : quadratic predicition
 		{
 		  tracks.push_back(Track(points[i].at(j).center_position()[0],points[i].at(j).center_position()[1],i,points[i].at(j).area()));
 		  tracks.back().add_point(candidate->center_position()[0],candidate->center_position()[1],i+1,candidate->area());
-	      candidate->track_index=tracks.size();
+		  candidate->track_index=tracks.size();
 	      
-	      
-	      //cout<<"Particules in "<<points[i].at(j).center[0]<<" "<<points[i].at(j).center[1]<<" @ "<<i<<" found a match in "<<candidate->center[0]<<" "<<candidate->center[1]<<"  New track n : "<<candidate->track_index<<endl;
-	      //test(7);
 		}
-	      //test(8);
 	    } //not already attributed
 	} //not previously attributed
     

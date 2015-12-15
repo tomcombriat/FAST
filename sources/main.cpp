@@ -112,16 +112,14 @@ string argv1_old;
 fstream log_i("log.txt",ios::in);
  log_i>>argv1_old;
 
- // cout<<argv1_old<<endl;
-
 
 
   fstream sortie(argv[2],ios::out);
-  double search_radius=0;
+  double search_radius=0,flow_x=0,flow_y=0;
   unsigned int NB_remanence=50;
   vector<Track> tracks;
   char key;
-  unsigned int i=0,kernel_size=3,derivative_size,gap,strategy;
+  unsigned int i=0,kernel_size=3,derivative_size,gap,strategy,flow_remover;
 
   cout<<"  Press enter to continue...\n\n";
   cin.ignore();
@@ -240,38 +238,45 @@ fstream log("log.txt",ios::out);  //for further developments
  c=0;
 
 
-    
-  //cvDestroyWindow("Display");
   satisfied=false;
 
 
 
   find_particules(thresholded,0,points[0]);
-  // test(0);
+
   cout<<"\n  First image characteristics: "<<endl;
   cout<<"    - number of detected particles: "<<points[0].size()<<endl;
   cout<<"    - mean size/std: "<<points_mean(points[0])<<"  "<<points_std(points[0])<<endl;
 
-
-
-  imshow("Display",tamp);
-    cout << "\n  Use the cursor on the image to set the min/max size of the particles (press enter when you are done)\n";
+  imshow("Display",img);
+  cout << "\n  Use the cursor on the image to set the min/max size of the particles (press enter when you are done)\n";
   createTrackbar("Area min", "Display", &area_min, 1000, area_TB_min);
   createTrackbar("Area max", "Display", &area_max, 1000, area_TB_max);
-
   
- while (c!=1048586) c=waitKey(0);
-	    
- //    }
+  
+  while (c!=1048586) c=waitKey(0);
+  
+  
+  
+  cout<<"\n     Do you want to use the predictive tracker? (Useful if your particles are more or less deterministic) (0 or 1) >> ";
+  cin>>strategy;
+  cout<<"\n     Do you want to remove a flow velocity? (If you know the global velocity of the flow) (0 or 1) >> ";
+  cin>>flow_remover;
+
+  if (flow_remover)
+    {
+      cout<<"        X flow velocity (in pixels/frame) >> ";
+      cin>>flow_x;
+      cout<<"        Y flow velocity (in pixels/frame) >> ";
+      cin>>flow_y;
+    }
+  
+  cout<<"\n     Gap closing (null or positive integer) >> ";
+  cin>>gap;
  
- cout<<"\n     Do you want to use the predictive tracker? (Useful if your particles are more or less deterministic) (0 or 1) >> ";
- cin>>strategy;
- cout<<"\n     Gap closing (null or positive integer) >> ";
- cin>>gap;
- 
- i=1;
- cout<<"  Detection..."<<endl;
- while(i<NB_Frame)
+  i=1;
+  cout<<"  Detection..."<<endl;
+  while(i<NB_Frame)
     {
       video2.read(img);
       if (i%100==0)
@@ -279,7 +284,7 @@ fstream log("log.txt",ios::out);  //for further developments
 	  cout<<"\r"<<i<<"/"<<NB_Frame;
 	  fflush(stdout);
 	}
-
+      
       GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
       cvtColor(blurred_img, blurred_img, CV_RGB2GRAY);
       Laplacian(blurred_img,LOG_img,CV_32F,derivative_size,-1,120,BORDER_DEFAULT);
@@ -303,18 +308,19 @@ fstream log("log.txt",ios::out);  //for further developments
       i++;
     }
 
+  
   cout<<endl<<endl<<"  Linking particles..."<<endl;
-  link_particules(points,tracks,search_radius, NB_Frame,0,100,gap,0);
+  link_particules(points,tracks,search_radius, NB_Frame,0,100,gap,0,flow_y,flow_x);
 
   cout<<endl<<endl<<"Done!  "<<tracks.size()<<" tracks have been created!"<<endl;
 
 
-  cout<<"Écriture des fichiers..."<<endl;
+  cout<<"Writing files..."<<endl;
   sortie<<"#Tracks_ID,X,Y,T,size"<<endl;
   for (unsigned int i=0;i<tracks.size();i++)
     {
       //      cout<<tracks[i].get_lenght()<<endl;
-      if (tracks[i].get_lenght()>10)
+      if (tracks[i].get_lenght()>1)
 	{
 	  for (unsigned int j=0;j<tracks[i].get_lenght();j++)
 	    {
