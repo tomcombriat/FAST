@@ -230,6 +230,8 @@ fstream log("log.txt",ios::out);  //for further developments
     cout << "\n  Use the cursor on the image to set the threshold (press enter when you are done)\n";
   createTrackbar("Threshold_set", "Display", &_threshold, 255, threshold_TB );
   threshold_TB(_threshold,0);
+
+  
  int c= 0;
 
 
@@ -260,6 +262,7 @@ fstream log("log.txt",ios::out);  //for further developments
   
   cout<<"\n     Do you want to use the predictive tracker? (Useful if your particles are more or less deterministic) (0 or 1) >> ";
   cin>>strategy;
+  
   cout<<"\n     Do you want to remove a flow velocity? (If you know the global velocity of the flow) (0 or 1) >> ";
   cin>>flow_remover;
 
@@ -316,7 +319,7 @@ fstream log("log.txt",ios::out);  //for further developments
 
 
   cout<<"Writing files..."<<endl;
-  sortie<<"#Tracks_ID X Y T size"<<endl;
+  sortie<<"#Tracks_ID,X,Y,T,size"<<endl;
   for (unsigned int i=0;i<tracks.size();i++)
     {
       //      cout<<tracks[i].get_lenght()<<endl;
@@ -324,7 +327,7 @@ fstream log("log.txt",ios::out);  //for further developments
 	{
 	  for (unsigned int j=0;j<tracks[i].get_lenght();j++)
 	    {
-	      sortie<<i<<" "<<tracks[i].Y.at(j)<<" "<<tracks[i].X.at(j)<<" "<<tracks[i].Frame.at(j)<<" "<<tracks[i].size_P.at(j)<<endl;
+	      sortie<<i<<","<<tracks[i].Y.at(j)<<","<<tracks[i].X.at(j)<<","<<tracks[i].Frame.at(j)<<" "<<tracks[i].size_P.at(j)<<endl;
 	    }
 	}
     }

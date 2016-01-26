@@ -268,7 +268,7 @@ void link_particules(vector<Points> * & points,vector<Track> & tracks,double sea
 
 
 		       
-	      Points * candidate;
+	      Points * candidate=NULL;
 	      double candidate_cost=search_radius+1;
 	      for (unsigned int k=0;k<points[i+1].size();k++) //loop in particules in next frame
 		{
@@ -309,7 +309,7 @@ void link_particules(vector<Points> * & points,vector<Track> & tracks,double sea
 	    {
 	      expected_position[0]=points[i].at(j).center_position()[0]+flow_x;
 	      expected_position[1]=points[i].at(j).center_position()[1]+flow_y;
-	      Points * candidate;
+	      Points * candidate=NULL;
 	      double candidate_cost=search_radius+1;
 
 	      for (unsigned int k=0;k<points[i+1].size();k++) //loop in particules in next frame
