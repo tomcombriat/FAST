@@ -221,7 +221,8 @@ fstream log("log.txt",ios::out);  //for further developments
   video2.read(img);
 
 
-  GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
+   GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
+   //GaussianBlur(-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
   cvtColor(blurred_img, blurred_img, CV_RGB2GRAY);
   Laplacian(blurred_img,LOG_img,CV_32F,derivative_size,-1,120,BORDER_DEFAULT);
 
@@ -308,6 +309,8 @@ fstream log("log.txt",ios::out);  //for further developments
       i++;
     }
 
+  //Writing log
+  log<<"\nThreshold : "<<_threshold<<"\nArea min\max : "<<area_min<<" \ "<<area_max<<endl;
   
   cout<<endl<<endl<<"  Linking particles..."<<endl;
   link_particules(points,tracks,search_radius, NB_Frame,0,100,gap,0,flow_y,flow_x);
