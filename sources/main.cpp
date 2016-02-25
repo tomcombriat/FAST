@@ -310,7 +310,7 @@ fstream log("log.txt",ios::out);  //for further developments
     }
 
   //Writing log
-  log<<"\nThreshold : "<<_threshold<<"\nArea min\max : "<<area_min<<" \ "<<area_max<<endl;
+  log<<"\nThreshold : "<<_threshold<<"\nArea min/max : "<<area_min<<"/"<<area_max<<endl;
   
   cout<<endl<<endl<<"  Linking particles..."<<endl;
   link_particules(points,tracks,search_radius, NB_Frame,0,100,gap,0,flow_y,flow_x);
