@@ -126,7 +126,6 @@ fstream log_i("log.txt",ios::in);
 
 
 
-  
 
 
   VideoCapture video(argv[1]);
@@ -135,6 +134,8 @@ fstream log_i("log.txt",ios::in);
     {
       cout<<"Source file opened!"<<endl<<"     Infos :"<<endl;
       cout<<"w="<<video.get(CV_CAP_PROP_FRAME_WIDTH)<<"  H="<<video.get(CV_CAP_PROP_FRAME_HEIGHT)<<"  FPS="<<video.get(CV_CAP_PROP_FPS)<<endl;
+      
+      video.set(CV_CAP_PROP_FRAME_WIDTH,video.get(CV_CAP_PROP_FRAME_WIDTH)+10);
     }
   else
     {
@@ -182,15 +183,23 @@ fstream log_i("log.txt",ios::in);
 	      cout<<"\r"<<i<<"/"<<NB_Frame;
 	      fflush(stdout);
 	    }
+	  /*imshow("iursetc",img);
+	    cv::waitKey(0);*/
 	  tamp=img.clone();
 	  tamp.convertTo(tamp,6);
-
+	       
+	  //
+	
 	  tamp=tamp*1./NB_Frame;
 	  if (i==0) mean_img=tamp.clone();
 	  else mean_img+=tamp.clone();
 	  i++;
 	}
-      imwrite ("background.jpg",mean_img);
+      vector<int> compression_params;
+      compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);
+      compression_params.push_back(100);
+      imwrite ("background.jpg",mean_img,compression_params);
+
     }
   else
     {
@@ -313,7 +322,7 @@ fstream log("log.txt",ios::out);  //for further developments
   log<<"\nThreshold : "<<_threshold<<"\nArea min/max : "<<area_min<<"/"<<area_max<<endl;
   
   cout<<endl<<endl<<"  Linking particles..."<<endl;
-  link_particules(points,tracks,search_radius, NB_Frame,0,100,gap,0,flow_y,flow_x);
+  link_particules(points,tracks,search_radius, NB_Frame,area_min,area_max,gap,0,flow_y,flow_x);
 
   cout<<endl<<endl<<"Done!  "<<tracks.size()<<" tracks have been created!"<<endl;
 

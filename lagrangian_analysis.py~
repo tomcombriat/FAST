@@ -1,0 +1,164 @@
+from mpl_toolkits.mplot3d import axes3d
+import matplotlib.pyplot as plt
+import numpy as np
+import math as math
+from scipy import interpolate
+from scipy import ndimage
+from matplotlib import cm
+import string as string
+from matplotlib.patches import Rectangle
+import matplotlib.lines as Line
+from scipy.signal import savgol_filter
+from scipy.signal import medfilt
+
+
+#import pylab as plot
+
+def column(matrix, i):
+    return [row[i] for row in matrix]
+
+def distance(pt1,pt2):
+    return math.sqrt((pt1[0]-pt2[0])**2+(pt1[1]-pt2[1])**2)
+
+def normalisation_factor(origine,pt,R0):
+    dis=distance(origine,pt)
+    theta=math.acos(abs(pt[0]-origine[0])/dis)
+    A=(math.sin(theta)*(1-3*(R0/dis)))**2+(math.cos(theta)*((R0/dis)-1))**2
+    return math.sqrt(A)
+
+print("\n Programme d'analyse lagrangienne des trajectoires fournies par le trackmate de Fiji, ou celui de Houelette ou celui de Combriat\n Écrit par T. Combriat au Liphy (version du 09/10/2015)\n Testé avec Python3\n")
+
+
+print("* Loading file....")
+
+
+
+
+from_matlab=True
+smoothing=False
+col_selected=386
+
+if not (from_matlab): data=np.genfromtxt('Spots in tracks statistics.csv',delimiter=",")
+else: data=np.genfromtxt('tracked_spots.csv',delimiter=",")
+print("* Loaded !")
+
+
+
+bulle=[278,288]
+fps=500
+
+pixel_to_micron=2
+
+
+if not (from_matlab):
+    X=column(data,5)
+    Y=column(data,6)
+    T=column(data,8)
+    track_id=column(data,3)
+else:
+    track_id=column(data,0)
+    X=column(data,1)
+    Y=column(data,2)
+    T=column(data,3)
+
+
+x=[[]]
+y=[[]]
+t=[[]]
+vtot=[[]]
+vx=[[]]
+vy=[[]]
+x_sm=[[]]
+y_sm=[[]]
+vr=[[]]
+vtheta=[[]]
+
+window_size, poly_order = 51, 2
+
+print("* Decoding...")
+for i in range(math.floor(max(track_id))):
+    x.append([])
+    y.append([])
+    t.append([])
+    vtot.append([])
+    vx.append([])
+    vy.append([])
+    x_sm.append([])
+    y_sm.append([])
+    vr.append([])
+    vtheta.append([])
+
+
+
+    
+for j in range(len(X)):
+    x[math.floor(track_id[j])].append(X[j])
+    y[math.floor(track_id[j])].append(Y[j])
+    #vtot[math.floor(track_id[j])].append(0)
+    t[math.floor(track_id[j])].append(T[j])
+
+if (smoothing):
+    print("* Smoothing...")
+    for i in range(len(x)):
+        if (i==col_selected):
+            #print(i)
+            x_sm[i]=savgol_filter(x[i],window_size,poly_order)
+            y_sm[i]=savgol_filter(y[i],window_size,poly_order)
+            """
+            vx[i]=savgol_filter(x[i],window_size,poly_order,1)
+            vy[i]=savgol_filter(y[i],window_size,poly_order,1)
+            """
+
+            for j in range(len(x[i])-1):
+                vect=[bulle[0]-x[i][j],bulle[1]-y[i][j]]
+                norm=math.sqrt(vect[0]*vect[0]+vect[1]*vect[1])
+                vect[0]=vect[0]/norm
+                vect[1]=vect[1]/norm
+                vx[i].append((x_sm[i][j+1]-x_sm[i][j])/(t[i][j+1]-t[i][j]))
+                vy[i].append((y_sm[i][j+1]-y_sm[i][j])/(t[i][j+1]-t[i][j]))
+                vtot[i].append(math.sqrt(vx[i][j]*vx[i][j]+vy[i][j]*vy[i][j]))
+                vr[i].append(vect[0]*vx[i][j]+vect[1]*vy[i][j])
+                vtheta[i].append(vect[0]*vy[i][j]-vect[1]*vx[i][j])
+            vx[i].append(vx[i][-1])
+            vy[i].append(vy[i][-1])
+            vtot[i].append(vtot[i][-1])
+            vr[i].append(vr[i][-1])
+            vtheta[i].append(vtheta[i][-1])
+            
+
+fig=plt.figure()
+line=[]
+#line.append(Line.Line2D(x[0],x[0],label='1'))
+for i in range(len(x)):
+    if (len(x[i])!=0):
+        if (1):
+        #if(x[i][0]<150 and y[i][0]<20 and x[i][0]>100):
+        #if (i==col_selected):
+        #if (i in range(5000,6000)):
+            if (smoothing):
+                plt.plot(x_sm[i],y_sm[i],label=str(i))
+            plt.plot(x[i],y[i],label=str(i))
+            plt.text(x[i][0],y[i][0],str(i))
+    #print(str(track_id[i][0]))
+plt.gca().invert_yaxis()
+plt.gca().set_aspect('equal', adjustable='box')
+plt.show()
+
+
+
+fig2=plt.figure()
+
+plt.plot(t[col_selected],vr[col_selected])
+
+plt.show()
+
+
+
+print("* Writing files...")
+sortie = open("speed_out.res","w")
+sortie.write("t distance x_sm y_sm vtot vr vtheta\n")
+for j in range(len(x[col_selected])):
+    sortie.write("%f %f %f %f %f %f %f\n" % (t[col_selected][j]/fps,distance(bulle,[x_sm[col_selected][j],y_sm[col_selected][j]])*pixel_to_micron,x_sm[col_selected][j]*pixel_to_micron, y_sm[col_selected][j]*pixel_to_micron, vtot[col_selected][j]*pixel_to_micron*fps,vr[col_selected][j]*pixel_to_micron*fps,vtheta[col_selected][j]*pixel_to_micron*fps))
+sortie.close()
+
+

@@ -93,6 +93,7 @@ void link_particules(vector<Points> * & points,vector<Track> & tracks,double sea
   //initialisation
   for (unsigned int i=0;i<points[0].size();i++)
     {
+      
       tracks.push_back(Track(points[0].at(i).center_position()[0],points[0].at(i).center_position()[1],0));
       points[0].at(i).track_index=i;
     }
@@ -305,7 +306,7 @@ void link_particules(vector<Points> * & points,vector<Track> & tracks,double sea
       for (unsigned int j=0;j<points[i].size();j++)  //loop on particules not being attributed on a tracks previously
 	{
 	  // test(j);
-	  if (points[i].at(j).track_index==-1)
+	  if (points[i].at(j).track_index==-1 && points[i].at(j).area()>=size_min && points[i].at(j).area()<=size_max)
 	    {
 	      expected_position[0]=points[i].at(j).center_position()[0]+flow_x;
 	      expected_position[1]=points[i].at(j).center_position()[1]+flow_y;
@@ -315,7 +316,7 @@ void link_particules(vector<Points> * & points,vector<Track> & tracks,double sea
 	      for (unsigned int k=0;k<points[i+1].size();k++) //loop in particules in next frame
 		{
 		  //cout<<"k="<<k<<endl; 
-		  if (points[i+1].at(k).track_index==-1)
+		  if (points[i+1].at(k).track_index==-1 && points[i+1].at(k).area()>=size_min && points[i+1].at(k).area()<=size_max)
 		    {
 		      double x_current=points[i+1].at(k).center_position()[0];
 		      double y_current=points[i+1].at(k).center_position()[1];
