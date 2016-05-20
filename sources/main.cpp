@@ -90,7 +90,7 @@ int main( int argc, char** argv )
 
   if( argc < 3)
     {
-      cout <<"\n\nUsage: ./PTV Video to load output_File -arg" << endl;
+      cout <<"\n\nUsage: ./FAST Video to load output_File -arg" << endl;
       cout<<"-arg can be -test if you want a complete display of found particles to check your parameters. This mode is not suitable for a real calculation."<<endl<<endl;
       return -1;
     }
