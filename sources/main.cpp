@@ -1,6 +1,6 @@
 /*
 
-  Copyright 2014,2015 Thomas Combriat
+  Copyright 2014,2015,2016 Thomas Combriat
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -45,14 +45,23 @@ vector<Points> * points;
 void threshold_TB(int, void *)
 {
   threshold(LOG_img,thresholded,_threshold,255,THRESH_BINARY);
-  imshow("Display", thresholded);  
+  imshow("Display", thresholded);
+    points[0].clear();
+    find_particules(thresholded,0,points[0]);
+    
+
 }
 
 void area_TB_min(int, void *)
 {
+
   Mat tamp=img.clone();
+
+
+  //cout<<   "S="<<points[0].size()<<endl;
   for (int i=0;i<points[0].size();i++)
     {
+
       if (points[0][i].area()>area_min && points[0][i].area()<area_max)
 	{
 	  circle(tamp,Point(points[0][i].center_position()[1],points[0][i].center_position()[0]),(points[0][i].area()/2),Scalar(0xFFFF),1,8,0);
@@ -64,7 +73,9 @@ void area_TB_min(int, void *)
 
 void area_TB_max(int, void *)
 {
+
   Mat tamp=img.clone();
+  //cout<<   "S="<<points[0].size()<<endl;
   for (int i=0;i<points[0].size();i++)
     {
       if (points[0][i].area()>area_min && points[0][i].area()<area_max)
@@ -96,7 +107,7 @@ int main( int argc, char** argv )
     }
 
 
-  cout<<"\n\n     Copyright 2014,2015 Thomas Combriat\nThis program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\n\n This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.\n\n You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.\n\n";
+  cout<<"\n\n     Copyright 2014,2015,2016 Thomas Combriat\nThis program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\n\n This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.\n\n You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.\n\n";
 
 
   bool mode_test=false;
@@ -240,6 +251,8 @@ fstream log("log.txt",ios::out);  //for further developments
     cout << "\n  Use the cursor on the image to set the threshold (press enter when you are done)\n";
   createTrackbar("Threshold_set", "Display", &_threshold, 255, threshold_TB );
   threshold_TB(_threshold,0);
+
+
  int c= 0;
 
 
@@ -252,7 +265,7 @@ fstream log("log.txt",ios::out);  //for further developments
 
 
 
-  find_particules(thresholded,0,points[0]);
+  // find_particules(thresholded,0,points[0]);
 
   cout<<"\n  First image characteristics: "<<endl;
   cout<<"    - number of detected particles: "<<points[0].size()<<endl;
