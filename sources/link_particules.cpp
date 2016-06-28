@@ -1,6 +1,6 @@
 /*
 
-  Copyright 2014,2015 Thomas Combriat
+  Copyright 2014,2015,2016 Thomas Combriat
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -205,7 +205,7 @@ void link_particules(vector<Points> * & points,vector<Track> & tracks,double sea
 
 
 
-void link_particules(vector<Points> * & points,vector<Track> & tracks,double search_radius,int NB_frames, int size_min, int size_max,unsigned int gap, unsigned int strategy, double flow_x, double flow_y)
+void link_particules(vector<Points> * & points,vector<Track> & tracks,double search_radius,int NB_frames, int size_min, int size_max,unsigned int gap, unsigned int strategy, double flow_x, double flow_y,boost::archive::text_iarchive & ia,bool mode_low_ram)
 {
 
   /*///////////////////////////////STRATEGY//////////////////////////////
@@ -213,8 +213,9 @@ void link_particules(vector<Points> * & points,vector<Track> & tracks,double sea
     if 1 : linear prediction
     if 2 : quadratic predicition
   */
+  //test(0);
 
-  
+ 
   double expected_position[2];
   unsigned int frame=0;
   //initialisation
@@ -232,7 +233,9 @@ void link_particules(vector<Points> * & points,vector<Track> & tracks,double sea
   //calcul
   for (unsigned int i=0;i<NB_frames-1;i++) //	  expected_position[0]=points[i][j].center[0];
     {
-     
+      
+      if (mode_low_ram) ia >> points[i+1];
+   
       if (i%100==0)
 	{
 	  cout<<"\r"<<i<<"/"<<NB_frames;
@@ -344,7 +347,8 @@ void link_particules(vector<Points> * & points,vector<Track> & tracks,double sea
 		}
 	    } //not already attributed
 	} //not previously attributed
-    
+    	  vector<Points> tamp_vec;
+	  points[i].swap(tamp_vec);
     } //loop on frames
  
 } //end of function

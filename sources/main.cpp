@@ -29,6 +29,10 @@
 #include "track.hpp"
 #include "link_particules.hpp"
 #include<fstream>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/vector.hpp>
+    //  a namespace alias is preferred practice in real code
 
 
 using namespace cv;
@@ -42,12 +46,14 @@ vector<Points> * points;
 
 
 
+
+
 void threshold_TB(int, void *)
 {
   threshold(LOG_img,thresholded,_threshold,255,THRESH_BINARY);
   imshow("Display", thresholded);
-    points[0].clear();
-    find_particules(thresholded,0,points[0]);
+  points[0].clear();
+  find_particules(thresholded,0,points[0]);
     
 
 }
@@ -107,21 +113,39 @@ int main( int argc, char** argv )
     }
 
 
-  cout<<"\n\n     Copyright 2014,2015,2016 Thomas Combriat\nThis program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\n\n This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.\n\n You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.\n\n";
+  cout<<"\n\n     Copyright 2014,2015,2016 Thomas Combriat (LIPhy - Grenoble - France)\nThis program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\n\n This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.\n\n You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.\n\n";
 
 
   bool mode_test=false;
+  bool mode_low_ram=false;
   if (argc==4)
     {
       if (std::string(argv[3])=="-test") mode_test=true;
-      else cout<<"\n Last argument unknown... Assuming non-test mode\n\n";
+      if (std::string(argv[3])=="-low-ram")
+	{
+	  mode_low_ram=true;
+	  cout<<  "     * LOW-RAM MODE ENABLE *\n";
+	}
+      else cout<<"\n Last argument unknown... Assuming non-test and non-low-ram mode\n\n";
     }
-
-
+  
+  
   cout<<"\n\n    Welcome to FAST (a Fast And Simple Tracker), developped at the LIPhy (Grenoble - France).\n    This program is distributed under the licence GNU GPLv3.\n\n\n";
-string argv1_old;
-fstream log_i("log.txt",ios::in);
- log_i>>argv1_old;
+  string argv1_old;
+  fstream log_i("log.txt",ios::in);
+  log_i>>argv1_old;
+
+
+
+  
+/****************ARCHIVE************/
+std::ofstream ofs("archive/ar");
+boost::archive::text_oarchive oa(ofs);
+
+/**************ARCHIVE***********/
+
+
+ 
 
 
 
@@ -219,7 +243,7 @@ fstream log_i("log.txt",ios::in);
     }
 
 
-fstream log("log.txt",ios::out);  //for further developments
+  fstream log("log.txt",ios::out);  //for further developments
   log<<argv[1]<<endl;
 
 
@@ -241,24 +265,24 @@ fstream log("log.txt",ios::out);  //for further developments
   video2.read(img);
 
 
-   GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
-   //GaussianBlur(-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
+  GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
+  //GaussianBlur(-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
   cvtColor(blurred_img, blurred_img, CV_RGB2GRAY);
   Laplacian(blurred_img,LOG_img,CV_32F,derivative_size,-1,120,BORDER_DEFAULT);
 
   bool satisfied=false;
 
-    cout << "\n  Use the cursor on the image to set the threshold (press enter when you are done)\n";
+  cout << "\n  Use the cursor on the image to set the threshold (press enter when you are done)\n";
   createTrackbar("Threshold_set", "Display", &_threshold, 255, threshold_TB );
   threshold_TB(_threshold,0);
 
 
- int c= 0;
+  int c= 0;
 
 
- while (c!=1048586) c=waitKey(0);
+  while (c!=1048586) c=waitKey(0);
 
- c=0;
+  c=0;
 
 
   satisfied=false;
@@ -307,7 +331,9 @@ fstream log("log.txt",ios::out);  //for further developments
 	  cout<<"\r"<<i<<"/"<<NB_Frame;
 	  fflush(stdout);
 	}
-      
+
+
+      points[i].reserve(points[i-1].size());
       GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
       cvtColor(blurred_img, blurred_img, CV_RGB2GRAY);
       Laplacian(blurred_img,LOG_img,CV_32F,derivative_size,-1,120,BORDER_DEFAULT);
@@ -328,14 +354,42 @@ fstream log("log.txt",ios::out);  //for further developments
 	  cv::waitKey(50);
 	}
 
-      i++;
-    }
+
+
+      
+      if (mode_low_ram)
+	{
+
+
+
+	    
+	  oa << points[i];
+	    
+	  // points[i].clear();
+		  vector<Points> tamp_vec;
+		  points[i].swap(tamp_vec);
+	  //points[i].~vector();
+	  //cout<<points[i][0].area()<<endl;
+	  if (i%100==0) ofs.flush();
+	}
+            i++;
+    }   /////END OF WHILE ON FRAMES
+  
+
+  ofs.close();
 
   //Writing log
   log<<"\nThreshold : "<<_threshold<<"\nArea min/max : "<<area_min<<"/"<<area_max<<endl;
+
+
+  
+std::ifstream ifs("archive/ar");
+boost::archive::text_iarchive ia(ifs);
+
+
   
   cout<<endl<<endl<<"  Linking particles..."<<endl;
-  link_particules(points,tracks,search_radius, NB_Frame,area_min,area_max,gap,0,flow_y,flow_x);
+  link_particules(points,tracks,search_radius, NB_Frame,area_min,area_max,gap,0,flow_y,flow_x,ia,mode_low_ram);
 
   cout<<endl<<endl<<"Done!  "<<tracks.size()<<" tracks have been created!"<<endl;
 
@@ -353,6 +407,7 @@ fstream log("log.txt",ios::out);  //for further developments
 	    }
 	}
     }
+  system("rm archive/ar");
   cout<<"\n Now exiting..."<<endl;
   return 0;
 }

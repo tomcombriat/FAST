@@ -1,6 +1,6 @@
 /*
 
-Copyright 2014,2015 Thomas Combriat
+Copyright 2014,2015,2016 Thomas Combriat
    This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -26,13 +26,22 @@ class Points
 public:
   Points(int _x, int _y);
   Points();
-  std::vector<double> x_pixels;
-  std::vector<double> y_pixels;
-  void add_pixel(int x, int y);
+  ~Points();
+  std::vector<unsigned int> x_pixels;
+  std::vector<unsigned int> y_pixels;
+  void add_pixel(unsigned int x,unsigned int y);
   double * center_position();
   double * center;
   double area();
   int track_index;
+  template<class Archive>
+  void serialize(Archive & ar, const unsigned int version)
+  {
+    ar & x_pixels;
+    ar & y_pixels;
+    ar & center[0];
+    ar & center[1];
+  }
 };
 
 double  points_mean(std::vector<Points> &  points);

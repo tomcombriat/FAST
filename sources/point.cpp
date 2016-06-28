@@ -1,6 +1,6 @@
 /*
 
-Copyright 2014,2015 Thomas Combriat
+Copyright 2014,2015,2016 Thomas Combriat
    This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -45,7 +45,7 @@ Points::Points()
   track_index=-1;
 }
 
-void Points::add_pixel(int _x, int _y)
+void Points::add_pixel(unsigned int _x,unsigned int _y)
 {
   x_pixels.push_back(_x);
   y_pixels.push_back(_y);
@@ -78,6 +78,13 @@ double Points::area()
 }
 
 
+Points::~Points()
+{
+  // x_pixels.~vector();
+  //y_pixels.~vector();
+  //delete center;
+}
+
 
 
 double  points_mean(vector<Points> & points)
@@ -107,3 +114,6 @@ double points_std(vector<Points> & points)
     std=sqrt(sum/size-mean*mean);
     return std;
 }
+
+
+
