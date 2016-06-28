@@ -108,7 +108,7 @@ int main( int argc, char** argv )
   if( argc < 3)
     {
       cout <<"\n\nUsage: ./FAST Video to load output_File -arg" << endl;
-      cout<<"-arg can be -test if you want a complete display of found particles to check your parameters. This mode is not suitable for a real calculation."<<endl<<endl;
+      cout<<"\n -arg can be -test if you want a complete display of found particles to check your parameters. This mode is not suitable for a real calculation.\n\n -arg can also be -low-ram if you the software to be less ram comsuptive (but a little slower…)"<<endl<<endl;
       return -1;
     }
 
