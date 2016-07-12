@@ -104,6 +104,11 @@ int main( int argc, char** argv )
 {
 
   system("clear");
+  try{
+  system("mkdir archive");
+  }
+  catch(...)
+    {}
 
   if( argc < 3)
     {
@@ -118,23 +123,34 @@ int main( int argc, char** argv )
 
   bool mode_test=false;
   bool mode_low_ram=false;
-  if (argc==4)
+  bool mode_inv=false;
+  if (argc>3)
     {
-      if (std::string(argv[3])=="-test") mode_test=true;
-      if (std::string(argv[3])=="-low-ram")
+      for (unsigned int i=3; i<argc;i++)
 	{
-	  mode_low_ram=true;
-	  cout<<  "     * LOW-RAM MODE ENABLE *\n";
-	}
-      else cout<<"\n Last argument unknown... Assuming non-test and non-low-ram mode\n\n";
+	  if (std::string(argv[i])=="-test")
+	    {
+	      mode_test=true;
+	      cout<<  "\n     * TEST MODE ENABLE *\n";
+	    }
+	  if (std::string(argv[i])=="-low-ram") 
+	    {
+	      mode_low_ram=true;
+	      cout<<  "\n     * LOW-RAM MODE ENABLE *\n";
+	    }
+	  	  if (std::string(argv[i])=="-inv") 
+	    {
+	      mode_inv=true;
+	      cout<<  "\n     * ALL IMAGES WILL BE INVERTED *\n";
+	    }
+	}     
     }
-  
+
   
   cout<<"\n\n    Welcome to FAST (a Fast And Simple Tracker), developped at the LIPhy (Grenoble - France).\n    This program is distributed under the licence GNU GPLv3.\n\n\n";
   string argv1_old;
   fstream log_i("log.txt",ios::in);
   log_i>>argv1_old;
-
 
 
   
@@ -201,11 +217,6 @@ boost::archive::text_oarchive oa(ofs);
       new_background=false;
       cout<<"\n   An old background for your video has been detected!\n";
     }
-  /*
-    cout<<"Do you want to calculate a new background? (If the last time you have executed this program, it was on the video you (0 or 1) >>  ";
-    cin>>new_background;
-  */
-
 
   mean_img.convertTo(mean_img,6);
   if( new_background)
@@ -218,12 +229,12 @@ boost::archive::text_oarchive oa(ofs);
 	      cout<<"\r"<<i<<"/"<<NB_Frame;
 	      fflush(stdout);
 	    }
-	  /*imshow("iursetc",img);
-	    cv::waitKey(0);*/
+
 	  tamp=img.clone();
+	  if (mode_inv) bitwise_not(tamp,tamp);
 	  tamp.convertTo(tamp,6);
 	       
-	  //
+
 	
 	  tamp=tamp*1./NB_Frame;
 	  if (i==0) mean_img=tamp.clone();
@@ -263,7 +274,7 @@ boost::archive::text_oarchive oa(ofs);
 
   VideoCapture video2(argv[1]);
   video2.read(img);
-
+  if (mode_inv)  bitwise_not(img,img);
 
   GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
   //GaussianBlur(-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
@@ -289,7 +300,7 @@ boost::archive::text_oarchive oa(ofs);
 
 
 
-  // find_particules(thresholded,0,points[0]);
+
 
   cout<<"\n  First image characteristics: "<<endl;
   cout<<"    - number of detected particles: "<<points[0].size()<<endl;
@@ -326,12 +337,12 @@ boost::archive::text_oarchive oa(ofs);
   while(i<NB_Frame)
     {
       video2.read(img);
+      if (mode_inv) bitwise_not(img,img);
       if (i%100==0)
 	{
 	  cout<<"\r"<<i<<"/"<<NB_Frame;
 	  fflush(stdout);
 	}
-
 
       points[i].reserve(points[i-1].size());
       GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
@@ -353,17 +364,11 @@ boost::archive::text_oarchive oa(ofs);
 	  imshow("Display",tamp);
 	  cv::waitKey(50);
 	}
-
-
-
-      
+  
       if (mode_low_ram)
 	{
-
-
-
 	    
-	  oa << points[i];
+	  oa << points[i]; //load  points in archive (FIFO)
 	    
 	  // points[i].clear();
 		  vector<Points> tamp_vec;
@@ -376,7 +381,7 @@ boost::archive::text_oarchive oa(ofs);
     }   /////END OF WHILE ON FRAMES
   
 
-  ofs.close();
+  ofs.close();  //close archive
 
   //Writing log
   log<<"\nThreshold : "<<_threshold<<"\nArea min/max : "<<area_min<<"/"<<area_max<<endl;
@@ -407,7 +412,7 @@ boost::archive::text_iarchive ia(ifs);
 	    }
 	}
     }
-  system("rm archive/ar");
+  system("rm -r archive");
   cout<<"\n Now exiting..."<<endl;
   return 0;
 }
