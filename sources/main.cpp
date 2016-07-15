@@ -124,6 +124,7 @@ int main( int argc, char** argv )
   bool mode_test=false;
   bool mode_low_ram=false;
   bool mode_inv=false;
+  bool mode_no_BG=false;
   if (argc>3)
     {
       for (unsigned int i=3; i<argc;i++)
@@ -138,10 +139,15 @@ int main( int argc, char** argv )
 	      mode_low_ram=true;
 	      cout<<  "\n     * LOW-RAM MODE ENABLE *\n";
 	    }
-	  	  if (std::string(argv[i])=="-inv") 
+	  if (std::string(argv[i])=="-inv") 
 	    {
 	      mode_inv=true;
 	      cout<<  "\n     * ALL IMAGES WILL BE INVERTED *\n";
+	    }
+	  	  if (std::string(argv[i])=="-no-BG") 
+	    {
+	      mode_no_BG=true;
+	      cout<<  "\n     * NO BACKGROUD WILL BE USED *\n";
 	    }
 	}     
     }
@@ -210,7 +216,8 @@ boost::archive::text_oarchive oa(ofs);
 
   namedWindow( "Display", WINDOW_NORMAL);// Create a window for display.
   
-
+  if (!mode_no_BG)
+    {
   bool new_background=true;
   if (argv[1]==argv1_old) 
     {
@@ -253,7 +260,7 @@ boost::archive::text_oarchive oa(ofs);
       mean_img=input_bg.clone();
     }
 
-
+    }
   fstream log("log.txt",ios::out);  //for further developments
   log<<argv[1]<<endl;
 
@@ -273,10 +280,15 @@ boost::archive::text_oarchive oa(ofs);
   log<<"Blur size = "<<kernel_size<<"\nDerivative size = "<<derivative_size<<"\nSearch radius = "<<search_radius<<endl;
 
   VideoCapture video2(argv[1]);
+    int c= 0;
   video2.read(img);
-  if (mode_inv)  bitwise_not(img,img);
+  if (mode_inv && !mode_no_BG)  bitwise_not(img,img);
 
-  GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
+  if (mode_no_BG) GaussianBlur(img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
+
+  else GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
+  /*imshow("Display",blurred_img);
+    while (c!=1048586) c=waitKey(0);*/
   //GaussianBlur(-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
   cvtColor(blurred_img, blurred_img, CV_RGB2GRAY);
   Laplacian(blurred_img,LOG_img,CV_32F,derivative_size,-1,120,BORDER_DEFAULT);
@@ -288,7 +300,7 @@ boost::archive::text_oarchive oa(ofs);
   threshold_TB(_threshold,0);
 
 
-  int c= 0;
+
 
 
   while (c!=1048586) c=waitKey(0);
@@ -337,7 +349,7 @@ boost::archive::text_oarchive oa(ofs);
   while(i<NB_Frame)
     {
       video2.read(img);
-      if (mode_inv) bitwise_not(img,img);
+  if (mode_inv && !mode_no_BG)  bitwise_not(img,img);
       if (i%100==0)
 	{
 	  cout<<"\r"<<i<<"/"<<NB_Frame;
@@ -345,7 +357,8 @@ boost::archive::text_oarchive oa(ofs);
 	}
 
       points[i].reserve(points[i-1].size());
-      GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
+      if (mode_no_BG) GaussianBlur(img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
+      else GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
       cvtColor(blurred_img, blurred_img, CV_RGB2GRAY);
       Laplacian(blurred_img,LOG_img,CV_32F,derivative_size,-1,120,BORDER_DEFAULT);
       threshold(LOG_img,thresholded,_threshold,255,THRESH_BINARY);
