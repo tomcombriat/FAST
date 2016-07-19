@@ -32,7 +32,7 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
-    //  a namespace alias is preferred practice in real code
+
 
 
 using namespace cv;
@@ -283,9 +283,9 @@ boost::archive::text_oarchive oa(ofs);
     int c= 0;
   video2.read(img);
   if (mode_inv && !mode_no_BG)  bitwise_not(img,img);
+  if (!mode_inv && mode_no_BG)  bitwise_not(img,img);
 
   if (mode_no_BG) GaussianBlur(img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
-
   else GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
   /*imshow("Display",blurred_img);
     while (c!=1048586) c=waitKey(0);*/
