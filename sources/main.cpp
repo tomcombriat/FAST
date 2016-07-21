@@ -404,16 +404,16 @@ boost::archive::text_oarchive oa(ofs);
 std::ifstream ifs("archive/ar");
 boost::archive::text_iarchive ia(ifs);
 
-
+  sortie<<"#Tracks_ID X Y T size"<<endl;
   
   cout<<endl<<endl<<"  Linking particles..."<<endl;
-  link_particules(points,tracks,search_radius, NB_Frame,area_min,area_max,gap,0,flow_y,flow_x,ia,mode_low_ram);
+  link_particules(points,tracks,search_radius, NB_Frame,area_min,area_max,gap,0,flow_y,flow_x,ia,mode_low_ram,sortie);
 
   cout<<endl<<endl<<"Done!  "<<tracks.size()<<" tracks have been created!"<<endl;
 
 
   cout<<"Writing files..."<<endl;
-  sortie<<"#Tracks_ID X Y T size"<<endl;
+
   for (unsigned int i=0;i<tracks.size();i++)
     {
       //      cout<<tracks[i].get_lenght()<<endl;
