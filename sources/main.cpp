@@ -421,8 +421,10 @@ boost::archive::text_iarchive ia(ifs);
 	{
 	  for (unsigned int j=0;j<tracks[i].get_lenght();j++)
 	    {
+	      /* if (tracks[i].Y.at(j)<2000)
+		 {*/
 	      sortie<<i<<" "<<tracks[i].Y.at(j)<<" "<<tracks[i].X.at(j)<<" "<<tracks[i].Frame.at(j)<<" "<<tracks[i].size_P.at(j)<<endl;
-	    }
+		}  //}
 	}
     }
   system("rm -r archive");

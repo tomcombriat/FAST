@@ -108,7 +108,7 @@ void find_particules(cv::Mat & input, int frame, vector <Points> & points)
 		  _j=points[count].y_pixels.at(current_partial);
 		  //	  test(1);
 		  
-		  if (_i<height-1 && _j < width-1)
+		  if (_i<height-1 && _j < width-1 && _j>1)
 		    {
 		      if (ptr[(_i) * elem_step + _j+1]!=0)
 			{

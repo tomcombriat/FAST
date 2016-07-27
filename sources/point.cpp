@@ -49,6 +49,11 @@ void Points::add_pixel(unsigned int _x,unsigned int _y)
 {
   x_pixels.push_back(_x);
   y_pixels.push_back(_y);
+  if (_y>10000)
+    {
+      cout<<"Y="<<_y<<endl;
+    }
+
   //Points::center_position();
 }
 
@@ -66,8 +71,17 @@ double * Points::center_position()
     }
   center[0]=tamp_x;
   center[1]=tamp_y;
-  
-  // cout<<"Size : "<<x_pixels.size()<<" x "<<center[0]<<" y "<<center[1]<<endl;
+
+  /*
+  if (center[0]>10000 || center[1]>10000)
+    {
+   cout<<"Size : "<<x_pixels.size()<<" x "<<center[0]<<" y "<<center[1]<<endl;
+   for (int j=0; j<x_pixels.size();j++)
+     {
+       cout<<y_pixels[j]<<" ";
+     }
+   cout<<endl;
+   }*/
     }
   return center;
 }

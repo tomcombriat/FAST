@@ -29,11 +29,12 @@ public:
   Track(double x, double y, int frame,int size);
   void add_point(double x, double y, int frame);
   void add_point(double x, double y, int frame,int size);
-  std::vector<double> X,Y,size_P;
-  std::vector<int> Frame;
+  std::vector<double> X,Y;
+  std::vector<int> Frame,size_P;
   int lenght;
   int get_lenght();
-  ~Track();
+  
+  void clear();
   
 };
 

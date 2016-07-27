@@ -66,7 +66,7 @@ void Track::add_point(double x, double y, int frame,int size)
   X.push_back(x);
   Y.push_back(y);
   Frame.push_back(frame);
-    size_P.push_back(size);
+  size_P.push_back(size);
   lenght++;
 }
 
