@@ -72,9 +72,9 @@ void find_particules(cv::Mat & input, int frame, vector <Points> & points)
 {
   
   unsigned int count=0;
-  uint8_t *myData = input.data;
-  int width = input.cols;
-  int height = input.rows;
+  uint8_t *myData = input.data;                              //input data are a vector of uint_8, we need to know how many elements we have
+  int width = input.cols;                                    //to know the size of each element (sizeof(float)) and how many elements are 
+  int height = input.rows;                                   //are in a row to read it as if it was a matrix…
   int _stride = input.step;//in case cols != strides
   float* ptr = (float*) input.data;
    size_t elem_step = input.step / sizeof(float);
@@ -85,28 +85,20 @@ void find_particules(cv::Mat & input, int frame, vector <Points> & points)
       for(int j = 0; j < width; j++)
 	{
 	  // cout<<"j="<<j<<endl;
-	  float val = ptr[i * elem_step + j];
+	  float val = ptr[i * elem_step + j];  //value of the current pixel
 
-	  if (val!=0)
-	    {
-	      //  cout<<"Particles found at position : "<<i<<"  "<<j<<endl;
-	      int partial_count=1;
-	      int current_partial=0;
-	      //   cout<<"P1 "<<points.size()<<"   ";
+	  if (val!=0)  //value above threshold: the edge of a particle! (top edge)   We will check all its neighbor for other non black pixels (part of the particle) and will 
+	    {          //do that recursively for all non-0 pixels until the whole particle is detected…
+	      int partial_count=1;  //number of pixels positively detected
+	      int current_partial=0;  //number of pixels for which all neighbors have been checked
 	      points.push_back(Points(i,j));
-	      // cout<<"P2 "<<points.size()<<endl;
-	      ptr[i*elem_step+j]=0;
-	      // cout<<"P3 "<<points.size()<<endl;
+	      ptr[i*elem_step+j]=0;  //we put the value to zero for the pixel not to be detected again by the algorithm  /!\ This is changing the output image /!\
 	      
 	      unsigned int _i=i, _j=j;
-	      while(current_partial<partial_count)
+	      while(current_partial<partial_count)  
 		{
-
-		  //	  cout<<partial_count<<"   count="<<count<<"   current_partial="<<current_partial<<"  partial count="<<partial_count<<"    point size="<<points.size()<<endl;
-		  //	  test(0);
 		  _i=points[count].x_pixels.at(current_partial);
 		  _j=points[count].y_pixels.at(current_partial);
-		  //	  test(1);
 		  
 		  if (_i<height-1 && _j < width-1 && _j>1)
 		    {
@@ -126,7 +118,6 @@ void find_particules(cv::Mat & input, int frame, vector <Points> & points)
 
 		      if (ptr[(_i+1) * elem_step + _j]!=0)
 			{
-			  //cout<<"salut3"<<endl;
 			  points[count].add_pixel(_i+1,_j);
 			  ptr[(_i+1) * elem_step + _j]=0;
 			  partial_count++;
@@ -134,7 +125,6 @@ void find_particules(cv::Mat & input, int frame, vector <Points> & points)
 	      
 		      if (ptr[(_i+1) * elem_step + _j+1]!=0)
 			{
-			  //cout<<"salut4"<<endl;
 			  points[count].add_pixel(_i+1,_j+1);
 			  ptr[(_i+1) * elem_step + _j+1]=0;
 			  partial_count++;
