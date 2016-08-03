@@ -22,13 +22,13 @@
 #include <opencv2/highgui/highgui.hpp>
 #include "opencv2/opencv.hpp"
 #include <iostream>
-#include"point.hpp"
+#include "point.hpp"
 #include "find_particules.hpp"
 #include <vector>
-#include<cmath>
+#include <cmath>
 #include "track.hpp"
 #include "link_particules.hpp"
-#include<fstream>
+#include <fstream>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
@@ -42,13 +42,13 @@ using namespace std;
 int _threshold,area_max=1000,area_min=0;
 Mat thresholded,LOG_img,img;
 
-vector<Points> * points;
+vector<Points> * points;   //This will contain all the points detected and will be passed to the link_particles function. Has to be global because of the OpenCV visualisation
 
 
 
 
 
-void threshold_TB(int, void *)
+void threshold_TB(int, void *)   //Trackbar for the threshold
 {
   threshold(LOG_img,thresholded,_threshold,255,THRESH_BINARY);
   imshow("Display", thresholded);
@@ -58,7 +58,7 @@ void threshold_TB(int, void *)
 
 }
 
-void area_TB_min(int, void *)
+void area_TB_min(int, void *)   //Trackbar for the area min of a particle
 {
 
   Mat tamp=img.clone();
@@ -70,14 +70,14 @@ void area_TB_min(int, void *)
 
       if (points[0][i].area()>area_min && points[0][i].area()<area_max)
 	{
-	  circle(tamp,Point(points[0][i].center_position()[1],points[0][i].center_position()[0]),(points[0][i].area()/2),Scalar(0xFFFF),1,8,0);
+	  circle(tamp,Point(points[0][i].center_position()[1],points[0][i].center_position()[0]),(points[0][i].area()/2),Scalar(0xFFFF),1,8,0);  //Draw a blue circle on image when a particle is in the range of wanted area
 	}
     }      
   imshow("Display",tamp);
 }
 
 
-void area_TB_max(int, void *)
+void area_TB_max(int, void *)  //Idem for the area max
 {
 
   Mat tamp=img.clone();
@@ -105,15 +105,15 @@ int main( int argc, char** argv )
 
   system("clear");
   try{
-  system("mkdir archive");
+    system("mkdir archive");   //perhaps the directory is already created (p.e. if Fast was killed before the end of its execution (*PAN*)
   }
-  catch(...)
+  catch(...)  
     {}
 
   if( argc < 3)
     {
       cout <<"\n\nUsage: ./FAST Video to load output_File -arg" << endl;
-      cout<<"\n -arg can be -test if you want a complete display of found particles to check your parameters. This mode is not suitable for a real calculation.\n\n -arg can also be -low-ram if you the software to be less ram comsuptive (but a little slower…)"<<endl<<endl;
+      cout<<"\n -arg can be -test if you want a complete display of found particles to check your parameters. This mode is not suitable for a real calculation.\n\n -arg can also be -low-ram if you the software to be less ram comsuptive (but a little slower…), or -no-BG if you do not want FAST to compute a background (if your particles are moving very slowy), or -inv if you want to detect white particles. All these options are compatible."<<endl<<endl;
       return -1;
     }
 
@@ -125,6 +125,8 @@ int main( int argc, char** argv )
   bool mode_low_ram=false;
   bool mode_inv=false;
   bool mode_no_BG=false;
+
+  /* Check for passed arguments */
   if (argc>3)
     {
       for (unsigned int i=3; i<argc;i++)
@@ -144,7 +146,7 @@ int main( int argc, char** argv )
 	      mode_inv=true;
 	      cout<<  "\n     * ALL IMAGES WILL BE INVERTED *\n";
 	    }
-	  	  if (std::string(argv[i])=="-no-BG") 
+	  if (std::string(argv[i])=="-no-BG") 
 	    {
 	      mode_no_BG=true;
 	      cout<<  "\n     * NO BACKGROUD WILL BE USED *\n";
@@ -160,11 +162,11 @@ int main( int argc, char** argv )
 
 
   
-/****************ARCHIVE************/
-std::ofstream ofs("archive/ar");
-boost::archive::text_oarchive oa(ofs);
+  /****************ARCHIVE************/
+  std::ofstream ofs("archive/ar");
+  boost::archive::text_oarchive oa(ofs);
 
-/**************ARCHIVE***********/
+  /**************ARCHIVE***********/
 
 
  
@@ -173,10 +175,10 @@ boost::archive::text_oarchive oa(ofs);
 
   fstream sortie(argv[2],ios::out);
   double search_radius=0,flow_x=0,flow_y=0;
-  unsigned int NB_remanence=50;
   vector<Track> tracks;
   char key;
   unsigned int i=0,kernel_size=3,derivative_size,gap,strategy,flow_remover;
+  Mat blurred_img,mean_img,frame32f,tamp,input_bg; 
 
   cout<<"  Press enter to continue...\n\n";
   cin.ignore();
@@ -190,8 +192,7 @@ boost::archive::text_oarchive oa(ofs);
   if (video.isOpened())
     {
       cout<<"Source file opened!"<<endl<<"     Infos :"<<endl;
-      cout<<"w="<<video.get(CV_CAP_PROP_FRAME_WIDTH)<<"  H="<<video.get(CV_CAP_PROP_FRAME_HEIGHT)<<"  FPS="<<video.get(CV_CAP_PROP_FPS)<<endl;
-      
+      cout<<"w="<<video.get(CV_CAP_PROP_FRAME_WIDTH)<<"  H="<<video.get(CV_CAP_PROP_FRAME_HEIGHT)<<"  FPS="<<video.get(CV_CAP_PROP_FPS)<<endl;      
       video.set(CV_CAP_PROP_FRAME_WIDTH,video.get(CV_CAP_PROP_FRAME_WIDTH)+10);
     }
   else
@@ -200,115 +201,107 @@ boost::archive::text_oarchive oa(ofs);
       return 0;
     }
 
-
-
-  int NB_Frame=video.get(CV_CAP_PROP_FRAME_COUNT);
- 
+  int NB_Frame=video.get(CV_CAP_PROP_FRAME_COUNT); 
   cout<<NB_Frame<<" images to analyse"<<endl;
-  Mat * output;
-  output=new Mat[NB_Frame+1];
-
   points=new vector<Points>[NB_Frame];
 
 
-  Mat blurred_img,mean_img,frame32f,tamp,input_bg;
+
 
 
   namedWindow( "Display", WINDOW_NORMAL);// Create a window for display.
   
   if (!mode_no_BG)
     {
-  bool new_background=true;
-  if (argv[1]==argv1_old) 
-    {
-      new_background=false;
-      cout<<"\n   An old background for your video has been detected!\n";
-    }
-
-  mean_img.convertTo(mean_img,6);
-  if( new_background)
-    {
-      cout<<"Calculating the background..."<<endl;
-      while(video.read(img))
+      bool new_background=true;
+      if (argv[1]==argv1_old) // Check if the video video to analyse is the same than the previous video… In this case don't need to calculate a second time the same background
 	{
-	  if (i%100==0)
-	    {
-	      cout<<"\r"<<i<<"/"<<NB_Frame;
-	      fflush(stdout);
-	    }
+	  new_background=false;  
+	  cout<<"\n   An old background for your video has been detected!\n";
+	}
 
-	  tamp=img.clone();
-	  if (mode_inv) bitwise_not(tamp,tamp);
-	  tamp.convertTo(tamp,6);
+      mean_img.convertTo(mean_img,6);
+      if( new_background)
+	{
+	  cout<<"Calculating the background..."<<endl;
+	  while(video.read(img)) //read images until the end of file
+	    {
+	      if (i%100==0)
+		{
+		  cout<<"\r"<<i<<"/"<<NB_Frame;
+		  fflush(stdout);
+		}
+
+	      tamp=img.clone();  // Warning, a simple assignation tamp=img; do not work because OCV does not make a copy in this case.
+	      if (mode_inv) bitwise_not(tamp,tamp); // Invert image if mode -inv enable
+	      tamp.convertTo(tamp,6);  // convert to grayscale 32bit float
 	       
 
-	
-	  tamp=tamp*1./NB_Frame;
-	  if (i==0) mean_img=tamp.clone();
-	  else mean_img+=tamp.clone();
-	  i++;
+	      //Computing the mean of all images
+	      tamp=tamp*1./NB_Frame;  
+	      if (i==0) mean_img=tamp.clone();
+	      else mean_img+=tamp.clone();
+	      i++;
+	    }
+
+	  //Writing the background to a file in order to reuse it
+	  vector<int> compression_params;
+	  compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);
+	  compression_params.push_back(100);
+	  imwrite ("background.jpg",mean_img,compression_params);
+
 	}
-      vector<int> compression_params;
-      compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);
-      compression_params.push_back(100);
-      imwrite ("background.jpg",mean_img,compression_params);
+      else   //read already calculted background
+	{
+	  input_bg=imread("background.jpg",-1);
+	  mean_img=input_bg.clone();
+	}
 
     }
-  else
-    {
-      input_bg=imread("background.jpg",-1);
-      mean_img=input_bg.clone();
-    }
 
-    }
-  fstream log("log.txt",ios::out);  //for further developments
+  
+  fstream log("log.txt",ios::out); //will store the parameters of the calculation. Will allow next instance of the program to know if it has to compute a new bg or no.
   log<<argv[1]<<endl;
 
 
   mean_img.convertTo(mean_img,0);
 
   cout<<"\n\n  LOG detector: informations required:\n";
-
   cout<<"    Blur size (positive and odd) >>  ";
   cin>>kernel_size;
   cout<<"    Derivative size (positive and odd) >>  ";
   cin>>derivative_size;
   cout<<"    Search radius (positive) >>  ";
   cin>>search_radius;
-
   log<<argv[0]<<" "<<argv[1]<<" "<<argv[2]<<" "<<mode_test<<endl;
   log<<"Blur size = "<<kernel_size<<"\nDerivative size = "<<derivative_size<<"\nSearch radius = "<<search_radius<<endl;
 
   VideoCapture video2(argv[1]);
-    int c= 0;
+  int c= 0;
   video2.read(img);
   if (mode_inv && !mode_no_BG)  bitwise_not(img,img);
-  if (!mode_inv && mode_no_BG)  bitwise_not(img,img);
+  if (!mode_inv && mode_no_BG)  bitwise_not(img,img);  //As any background is substracted, the image is not in the good dynamic
 
   if (mode_no_BG) GaussianBlur(img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
-  else GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
+  else GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);  
   /*imshow("Display",blurred_img);
     while (c!=1048586) c=waitKey(0);*/
   //GaussianBlur(-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
-  cvtColor(blurred_img, blurred_img, CV_RGB2GRAY);
+  cvtColor(blurred_img, blurred_img, CV_RGB2GRAY);   //convert to Grayscale for laplacian calculation
   Laplacian(blurred_img,LOG_img,CV_32F,derivative_size,-1,120,BORDER_DEFAULT);
 
-  bool satisfied=false;
+
 
   cout << "\n  Use the cursor on the image to set the threshold (press enter when you are done)\n";
   createTrackbar("Threshold_set", "Display", &_threshold, 255, threshold_TB );
   threshold_TB(_threshold,0);
 
 
-
-
-
-  while (c!=1048586) c=waitKey(0);
+  while (c!=1048586) c=waitKey(0);   //1048586 is the "enter" key code 
 
   c=0;
 
 
-  satisfied=false;
 
 
 
@@ -349,14 +342,14 @@ boost::archive::text_oarchive oa(ofs);
   while(i<NB_Frame)
     {
       video2.read(img);
-  if (mode_inv && !mode_no_BG)  bitwise_not(img,img);
+      if (mode_inv && !mode_no_BG)  bitwise_not(img,img);
       if (i%100==0)
 	{
 	  cout<<"\r"<<i<<"/"<<NB_Frame;
 	  fflush(stdout);
 	}
 
-      points[i].reserve(points[i-1].size());
+      points[i].reserve(points[i-1].size());  //for speed purposes
       if (mode_no_BG) GaussianBlur(img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
       else GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
       cvtColor(blurred_img, blurred_img, CV_RGB2GRAY);
@@ -364,8 +357,8 @@ boost::archive::text_oarchive oa(ofs);
       threshold(LOG_img,thresholded,_threshold,255,THRESH_BINARY);
       find_particules(thresholded,0,points[i]);
 
-      if (mode_test)
-	{
+      if (mode_test) //update the image in visualisation (soooo slow…)
+	{  
 	  tamp=img.clone();
 	  for (int j=0;j<points[i].size();j++)
 	    {
@@ -383,14 +376,13 @@ boost::archive::text_oarchive oa(ofs);
 	    
 	  oa << points[i]; //load  points in archive (FIFO)
 	    
-	  // points[i].clear();
-		  vector<Points> tamp_vec;
-		  points[i].swap(tamp_vec);
-	  //points[i].~vector();
-	  //cout<<points[i][0].area()<<endl;
-	  if (i%100==0) ofs.flush();
+
+	  vector<Points> tamp_vec;
+	  points[i].swap(tamp_vec);  //empty vector to free memory
+
+	  if (i%100==0) ofs.flush(); //actually write in file (not done for every frame for performances purposes
 	}
-            i++;
+      i++;
     }   /////END OF WHILE ON FRAMES
   
 
@@ -401,8 +393,8 @@ boost::archive::text_oarchive oa(ofs);
 
 
   
-std::ifstream ifs("archive/ar");
-boost::archive::text_iarchive ia(ifs);
+  std::ifstream ifs("archive/ar");  //open archive for linking
+  boost::archive::text_iarchive ia(ifs);
 
   sortie<<"#Tracks_ID X Y T size"<<endl;
   
@@ -416,15 +408,13 @@ boost::archive::text_iarchive ia(ifs);
 
   for (unsigned int i=0;i<tracks.size();i++)
     {
-      //      cout<<tracks[i].get_lenght()<<endl;
       if (tracks[i].get_lenght()>1)
 	{
 	  for (unsigned int j=0;j<tracks[i].get_lenght();j++)
 	    {
-	      /* if (tracks[i].Y.at(j)<2000)
-		 {*/
+
 	      sortie<<i<<" "<<tracks[i].Y.at(j)<<" "<<tracks[i].X.at(j)<<" "<<tracks[i].Frame.at(j)<<" "<<tracks[i].size_P.at(j)<<endl;
-		}  //}
+	    } 
 	}
     }
   system("rm -r archive");
