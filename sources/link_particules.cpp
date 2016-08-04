@@ -19,12 +19,12 @@
 
 
 
-#include<iostream>
-#include<cmath>
-#include<fstream>
-#include<iomanip>
-#include<stdlib.h>
-#include<vector>
+#include <iostream>
+#include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <stdlib.h>
+#include <vector>
 #include "point.hpp"
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -47,6 +47,17 @@ using namespace cv;
 //  ************COST FUNCTION**********************
 //  **********************************************/
 
+
+/**************************************************
+Cost functions compute the cost to link to different particles.
+This function can be computed from different factors: the distance,
+the size, the form factor etc…
+Currently, the first version computes the cost from the distance only,
+the second includes the size…
+Finally these functions will be merged in order to have the same prototypes,
+thus it will be easier to make this function evolve…
+
+****************************************************/
 
 double cost_function(double * current, double * expected)
 {
@@ -73,26 +84,6 @@ bool in_area(double * current, double * expected, double radius)
   else return false;
 }
 
-/*
-  double cost_function(int * current, double * expected)
-  {
-  return sqrt((current[0]-expected[0])*(current[0]-expected[0])+(current[1]-expected[1])*(current[1]-expected[1]));
-  }
-*/
-
-// /***********************************************
-//  ************IN AREA****************************
-//  **********************************************/
-/*
-  bool in_area(int * current, double * expected, double radius)
-  {
-  if (sqrt((current[0]-expected[0])*(current[0]-expected[0])+(current[1]-expected[1])*(current[1]-expected[1]))<radius) return true;
-  else return false;
-  
-  }
-*/
-
-
 
 
 
@@ -104,53 +95,50 @@ void link_particules(vector<Points> * & points,vector<Track> & tracks,double sea
   /*///////////////////////////////STRATEGY//////////////////////////////
     if 0 : neirest neighbor
     if 1 : linear prediction
-    if 2 : quadratic predicition
+    if 2 : quadratic predicition   (not implementated… (Yet?))
   */
-  //test(0);
 
  
   double expected_position[2];
   unsigned int frame=0;
-  //initialisation
+  //initialisation: will assign every point in frame 0 to a new track
   for (unsigned int i=0;i<points[0].size();i++)
     {
       if (points[0].at(i).area()>=size_min && points[0].at(i).area()<=size_max)
 	{
 	  tracks.push_back(Track(points[0].at(i).center_position()[0],points[0].at(i).center_position()[1],0,points[0].at(i).area()));
-	  //cout<<points[0].at(i).area()<<endl;
 	  points[0].at(i).track_index=i;
 	}
     }
 
 
-  //calcul
-  for (unsigned int i=0;i<NB_frames-1;i++) //	  expected_position[0]=points[i][j].center[0];
+  
+  for (unsigned int i=0;i<NB_frames-1;i++) // loop on all frames of the movie
     {
       
-      if (mode_low_ram) ia >> points[i+1];
+      if (mode_low_ram) ia >> points[i+1];  //Backup the archive 
    
       if (i%100==0)
 	{
 	  cout<<"\r"<<i<<"/"<<NB_frames;
 	  fflush(stdout);
 	}
-      for (unsigned int j=0;j<tracks.size();j++)  //loop on particule of frame N
+      for (unsigned int j=0;j<tracks.size();j++)  //loop on ALL tracks (not so efficient…)
 	{
 	  // test(j);
-	  if (tracks[j].Frame.back()<=i && tracks[j].Frame.back()>=i-gap)
+	  if (tracks[j].Frame.back()<=i && tracks[j].Frame.back()>=i-gap)  //test if track is still open.
 	    {
 	      //Linking of particules already linked in the precedent frame
-	      //TO change in further developments
 	      if (strategy==1)
 		{
-		  if (tracks[j].X.size()>1)
+		  if (tracks[j].X.size()>1) //linear interpolation
 		    {
 		      int size=tracks[j].X.size();
 		      expected_position[0]=(tracks[j].X.at(size-1)-tracks[j].X.at(size-2))/((tracks[j].Frame.at(size-1)-tracks[j].Frame.at(size-2)))+tracks[j].X.at(size-1)+flow_x;
 		      expected_position[1]=(tracks[j].Y.at(size-1)-tracks[j].Y.at(size-2))/((tracks[j].Frame.at(size-1)-tracks[j].Frame.at(size-2)))+tracks[j].Y.at(size-1)+flow_y;
 
 		    }
-		  else
+		  else  //track to short to compute the interpolation (2 points needed)
 		    {
 		      expected_position[0]=tracks[j].X.back()+flow_x;
 		      expected_position[1]=tracks[j].Y.back()+flow_y;
@@ -165,17 +153,16 @@ void link_particules(vector<Points> * & points,vector<Track> & tracks,double sea
 
 
 		       
-	      Points * candidate=NULL;
+	      Points * candidate=NULL; //Windows compatibility…
 	      double candidate_cost=search_radius*2;
 	      for (unsigned int k=0;k<points[i+1].size();k++) //loop in particules in next frame
-		{
-		  
-		  if (points[i+1].at(k).track_index==-1 && points[i+1].at(k).area()>=size_min && points[i+1].at(k).area()<=size_max)
+		{		  
+		  if (points[i+1].at(k).track_index==-1 && points[i+1].at(k).area()>=size_min && points[i+1].at(k).area()<=size_max)  //test if particle is not attributed (track_index=-1) and its size 
 		    {
 		      double x_current=points[i+1].at(k).center_position()[0];
 		      double y_current=points[i+1].at(k).center_position()[1];
 
-		      if (in_area(points[i+1].at(k).center_position(),expected_position,search_radius))  //put the cost function here ?
+		      if (in_area(points[i+1].at(k).center_position(),expected_position,search_radius))  //check if the particle is close enought to the expected position
 			{
 			  //if (cost_function(points[i+1].at(k).center_position(),expected_position)<=candidate_cost)
 			  if (cost_function(expected_position,points[i+1].at(k),tracks[j].size_P.back())<=candidate_cost)
@@ -188,18 +175,19 @@ void link_particules(vector<Points> * & points,vector<Track> & tracks,double sea
 			}// end if in area
 		    }//end if not already allocated
 		}//end loop particules in next frame
-	      if (candidate_cost<search_radius+1){
-		tracks[j].X.push_back(candidate->center_position()[0]);
-		tracks[j].Y.push_back(candidate->center_position()[1]);
-		tracks[j].Frame.push_back(i+1);
-		tracks[j].size_P.push_back(candidate->area());
-		candidate->track_index=j;
-		// cout<<"Track "<<j<<" found a match at position "<<candidate->center[0]<<" "<<candidate->center[1]<<endl;
-	      }  //end of if there is a match
-
+	      if (candidate_cost<search_radius+1) //a match is found:
+		{
+		  //put the particle at the end of the track
+		  tracks[j].X.push_back(candidate->center_position()[0]);
+		  tracks[j].Y.push_back(candidate->center_position()[1]);
+		  tracks[j].Frame.push_back(i+1);
+		  tracks[j].size_P.push_back(candidate->area());
+		  //give the number of the track to the particle (then it will not be attributed a second time…)
+		  candidate->track_index=j;
+		}  //end of if there is a match	      
 	    }  //end of if on particles who are between N and N-gap
 	} //end loop on tracks of frame N
-
+      
 
        
       for (unsigned int j=0;j<points[i].size();j++)  //loop on particules not being attributed on a tracks previously
@@ -236,7 +224,7 @@ void link_particules(vector<Points> * & points,vector<Track> & tracks,double sea
 			}// end if in area
 		    }//end if not already allocated
 		}//end loop particules in next frame
-	      if (candidate_cost<search_radius+1)
+	      if (candidate_cost<search_radius+1) //put the two particle in a new track
 		{
 		  tracks.push_back(Track(points[i].at(j).center_position()[0],points[i].at(j).center_position()[1],i,points[i].at(j).area()));
 		  tracks.back().add_point(candidate->center_position()[0],candidate->center_position()[1],i+1,candidate->area());
@@ -245,10 +233,9 @@ void link_particules(vector<Points> * & points,vector<Track> & tracks,double sea
 		}
 	    } //not already attributed
 	} //not previously attributed
-    	  vector<Points> tamp_vec;
-	  points[i].swap(tamp_vec);
+      vector<Points> tamp_vec;
+      points[i].swap(tamp_vec); //free memory
     } //loop on frames
- 
 } //end of function
 
 
