@@ -1,20 +1,15 @@
 /*
-
   Copyright 2014,2015,2016 Thomas Combriat
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
-
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
-
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-
 */
 
 
@@ -39,7 +34,7 @@ using namespace cv;
 using namespace std;
 
 //global variable
-int _threshold,area_max=1000,area_min=0;
+int _threshold,area_max=1000,area_min=0,N_dilate=0,N_erode=0;
 Mat thresholded,LOG_img,img;
 
 vector<Points> * points;   //This will contain all the points detected and will be passed to the link_particles function. Has to be global because of the OpenCV visualisation
@@ -50,21 +45,21 @@ vector<Points> * points;   //This will contain all the points detected and will 
 
 void threshold_TB(int, void *)   //Trackbar for the threshold
 {
+  Mat tamp,element=getStructuringElement(MORPH_ELLIPSE,Size(3,3),Point(-1,-1));
   threshold(LOG_img,thresholded,_threshold,255,THRESH_BINARY);
-  imshow("Display", thresholded);
+    dilate(thresholded,tamp,element,Point(-1,-1),N_dilate,BORDER_DEFAULT);
+      erode(tamp,tamp,element,Point(-1,-1),N_erode,BORDER_DEFAULT);
+  imshow("Display", tamp);
   points[0].clear();
-  find_particules(thresholded,0,points[0]);
-    
-
+  find_particules(tamp,0,points[0]);    
 }
+
 
 void area_TB_min(int, void *)   //Trackbar for the area min of a particle
 {
 
   Mat tamp=img.clone();
 
-
-  //cout<<   "S="<<points[0].size()<<endl;
   for (int i=0;i<points[0].size();i++)
     {
 
@@ -94,6 +89,36 @@ void area_TB_max(int, void *)  //Idem for the area max
 
 
 
+
+
+
+void dilate_TB(int, void *)
+{
+  Mat tamp;
+  Mat element=getStructuringElement(MORPH_ELLIPSE,Size(3,3),Point(-1,-1));
+
+  dilate(thresholded,tamp,element,Point(-1,-1),N_dilate,BORDER_DEFAULT);
+      erode(tamp,tamp,element,Point(-1,-1),N_erode,BORDER_DEFAULT);
+  imshow("Display", tamp);
+  points[0].clear();
+  find_particules(tamp,0,points[0]);  
+}
+
+
+
+
+
+void erode_TB(int, void *)
+{
+  Mat tamp;
+  Mat element=getStructuringElement(MORPH_ELLIPSE,Size(3,3),Point(-1,-1));
+
+  erode(thresholded,tamp,element,Point(-1,-1),N_erode,BORDER_DEFAULT);
+      dilate(tamp,tamp,element,Point(-1,-1),N_dilate,BORDER_DEFAULT);
+  imshow("Display", tamp);
+  points[0].clear();
+  find_particules(tamp,0,points[0]);  
+}
 
 
 
@@ -178,7 +203,7 @@ int main( int argc, char** argv )
   vector<Track> tracks;
   char key;
   unsigned int i=0,kernel_size=3,derivative_size,gap,strategy,flow_remover;
-  Mat blurred_img,mean_img,frame32f,tamp,input_bg; 
+  Mat blurred_img,mean_img,frame32f,tamp,input_bg,element=getStructuringElement(MORPH_ELLIPSE,Size(3,3),Point(-1,-1));
 
   cout<<"  Press enter to continue...\n\n";
   cin.ignore();
@@ -256,7 +281,7 @@ int main( int argc, char** argv )
 	  input_bg=imread("background.jpg",-1);
 	  mean_img=input_bg.clone();
 	}
-
+      mean_img.convertTo(mean_img,0);
     }
 
   
@@ -264,7 +289,7 @@ int main( int argc, char** argv )
   log<<argv[1]<<endl;
 
 
-  mean_img.convertTo(mean_img,0);
+
 
   cout<<"\n\n  LOG detector: informations required:\n";
   cout<<"    Blur size (positive and odd) >>  ";
@@ -294,7 +319,11 @@ int main( int argc, char** argv )
 
   cout << "\n  Use the cursor on the image to set the threshold (press enter when you are done)\n";
   createTrackbar("Threshold_set", "Display", &_threshold, 255, threshold_TB );
+ createTrackbar("Dilate", "Display", &N_dilate, 4, dilate_TB );
+ //createTrackbar("Erode", "Display", &N_erode, 4, erode_TB );
+ 
   threshold_TB(_threshold,0);
+
 
 
   while (c!=1048586) c=waitKey(0);   //1048586 is the "enter" key code 
@@ -343,6 +372,7 @@ int main( int argc, char** argv )
     {
       video2.read(img);
       if (mode_inv && !mode_no_BG)  bitwise_not(img,img);
+      if (!mode_inv && mode_no_BG)  bitwise_not(img,img);  //As any background is substracted, the image is not in the good dynamic
       if (i%100==0)
 	{
 	  cout<<"\r"<<i<<"/"<<NB_Frame;
@@ -355,6 +385,8 @@ int main( int argc, char** argv )
       cvtColor(blurred_img, blurred_img, CV_RGB2GRAY);
       Laplacian(blurred_img,LOG_img,CV_32F,derivative_size,-1,120,BORDER_DEFAULT);
       threshold(LOG_img,thresholded,_threshold,255,THRESH_BINARY);
+      erode(thresholded,thresholded,element,Point(-1,-1),N_erode,BORDER_DEFAULT);
+      dilate(thresholded,thresholded,element,Point(-1,-1),N_dilate,BORDER_DEFAULT);
       find_particules(thresholded,0,points[i]);
 
       if (mode_test) //update the image in visualisation (soooo slow…)
