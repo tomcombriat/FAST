@@ -71,7 +71,8 @@ double cost_function(double * expected, Points & candidate,int size)
   double classical_cost;
   classical_cost=(sqrt((expected[0]-candidate.center[0])*(expected[0]-candidate.center[0])+(expected[1]-candidate.center[1])*(expected[1]-candidate.center[1])));
   int size_cost=abs(size-candidate.area());
-  return classical_cost+size_cost;
+  //return classical_cost+size_cost;
+  return classical_cost;
 
 }
 
@@ -91,7 +92,7 @@ bool in_area(double * current, double * expected, double radius)
 
 
 
-void link_particules(vector<Points> * & points,vector<Track> & tracks,double search_radius,int NB_frames, int size_min, int size_max,unsigned int gap, unsigned int strategy, double flow_x, double flow_y,boost::archive::text_iarchive & ia,bool mode_low_ram,fstream & sortie)
+void link_particules(vector<Points> * & points,vector<Track> & tracks,double search_radius,int NB_frames, int size_min, int size_max, int gap, unsigned int strategy, double flow_x, double flow_y,boost::archive::text_iarchive & ia,bool mode_low_ram,fstream & sortie)
 {
 
   /*///////////////////////////////STRATEGY//////////////////////////////
@@ -115,7 +116,7 @@ void link_particules(vector<Points> * & points,vector<Track> & tracks,double sea
 
 
   
-  for (unsigned int i=0;i<NB_frames-1;i++) // loop on all frames of the movie
+  for ( int i=0;i<NB_frames-1;i++) // loop on all frames of the movie
     {
       
       if (mode_low_ram) ia >> points[i+1];  //Backup the archive 
@@ -128,7 +129,9 @@ void link_particules(vector<Points> * & points,vector<Track> & tracks,double sea
       for (unsigned int j=0;j<tracks.size();j++)  //loop on ALL tracks (not so efficient…)
 	{
 	  // test(j);
-	  if (tracks[j].Frame.back()<=i && tracks[j].Frame.back()>=i-gap)  //test if track is still open.
+	  //cout<<tracks[j].Frame.back()<<" "<<i-gap<<endl;
+	  if (tracks[j].Frame.back()<=i && tracks[j].Frame.back()>=(i-gap))  //test if track is still open.
+	    
 	    {
 	      //Linking of particules already linked in the precedent frame
 	      if (strategy==1)
@@ -140,7 +143,7 @@ void link_particules(vector<Points> * & points,vector<Track> & tracks,double sea
 		      expected_position[1]=(tracks[j].Y.at(size-1)-tracks[j].Y.at(size-2))/((tracks[j].Frame.at(size-1)-tracks[j].Frame.at(size-2)))+tracks[j].Y.at(size-1)+flow_y;
 
 		    }
-		  else  //track to short to compute the interpolation (2 points needed)
+		  else  //track too short to compute the interpolation (2 points needed)
 		    {
 		      expected_position[0]=tracks[j].X.back()+flow_x;
 		      expected_position[1]=tracks[j].Y.back()+flow_y;

@@ -65,7 +65,7 @@ void area_TB_min(int, void *)   //Trackbar for the area min of a particle
 
       if (points[0][i].area()>area_min && points[0][i].area()<area_max)
 	{
-	  circle(tamp,Point(points[0][i].center_position()[1],points[0][i].center_position()[0]),(points[0][i].area()/2),Scalar(0xFFFF),1,8,0);  //Draw a blue circle on image when a particle is in the range of wanted area
+	  circle(tamp,Point(points[0][i].center_position()[1],points[0][i].center_position()[0]),(sqrt(points[0][i].area())),Scalar(0xFFFF),1,8,0);  //Draw a blue circle on image when a particle is in the range of wanted area
 	}
     }      
   imshow("Display",tamp);
@@ -81,7 +81,7 @@ void area_TB_max(int, void *)  //Idem for the area max
     {
       if (points[0][i].area()>area_min && points[0][i].area()<area_max)
 	{
-	  circle(tamp,Point(points[0][i].center_position()[1],points[0][i].center_position()[0]),(points[0][i].area()/2),Scalar(0xFFFF),1,8,0);
+	  circle(tamp,Point(points[0][i].center_position()[1],points[0][i].center_position()[0]),(sqrt(points[0][i].area())),Scalar(0xFFFF),1,8,0);
 	}
     }      
   imshow("Display",tamp);
@@ -98,7 +98,7 @@ void dilate_TB(int, void *)
   Mat element=getStructuringElement(MORPH_ELLIPSE,Size(3,3),Point(-1,-1));
 
   dilate(thresholded,tamp,element,Point(-1,-1),N_dilate,BORDER_DEFAULT);
-      erode(tamp,tamp,element,Point(-1,-1),N_erode,BORDER_DEFAULT);
+  erode(tamp,tamp,element,Point(-1,-1),N_erode,BORDER_DEFAULT);
   imshow("Display", tamp);
   points[0].clear();
   find_particules(tamp,0,points[0]);  
@@ -202,7 +202,8 @@ int main( int argc, char** argv )
   double search_radius=0,flow_x=0,flow_y=0;
   vector<Track> tracks;
   char key;
-  unsigned int i=0,kernel_size=3,derivative_size,gap,strategy,flow_remover;
+  int gap;
+  unsigned int i=0,kernel_size=3,derivative_size,strategy,flow_remover;
   Mat blurred_img,mean_img,frame32f,tamp,input_bg,element=getStructuringElement(MORPH_ELLIPSE,Size(3,3),Point(-1,-1));
 
   cout<<"  Press enter to continue...\n\n";
@@ -226,6 +227,8 @@ int main( int argc, char** argv )
       return 0;
     }
 
+  
+
   int NB_Frame=video.get(CV_CAP_PROP_FRAME_COUNT); 
   cout<<NB_Frame<<" images to analyse"<<endl;
   points=new vector<Points>[NB_Frame];
@@ -234,7 +237,6 @@ int main( int argc, char** argv )
 
 
 
-  namedWindow( "Display", WINDOW_NORMAL);// Create a window for display.
   
   if (!mode_no_BG)
     {
@@ -304,20 +306,23 @@ int main( int argc, char** argv )
   VideoCapture video2(argv[1]);
   int c= 0;
   video2.read(img);
+  //imshow("Dis", img);
+  
   if (mode_inv && !mode_no_BG)  bitwise_not(img,img);
   if (!mode_inv && mode_no_BG)  bitwise_not(img,img);  //As any background is substracted, the image is not in the good dynamic
 
   if (mode_no_BG) GaussianBlur(img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
   else GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);  
-  /*imshow("Display",blurred_img);
-    while (c!=1048586) c=waitKey(0);*/
-  //GaussianBlur(-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
-  cvtColor(blurred_img, blurred_img, CV_RGB2GRAY);   //convert to Grayscale for laplacian calculation
+
+   cvtColor(blurred_img, blurred_img, CV_RGB2GRAY);   //convert to Grayscale for laplacian calculation
   Laplacian(blurred_img,LOG_img,CV_32F,derivative_size,-1,120,BORDER_DEFAULT);
 
 
 
   cout << "\n  Use the cursor on the image to set the threshold (press enter when you are done)\n";
+
+  
+  namedWindow( "Display", WINDOW_NORMAL);// Create a window for display.
   createTrackbar("Threshold_set", "Display", &_threshold, 255, threshold_TB );
  createTrackbar("Dilate", "Display", &N_dilate, 4, dilate_TB );
  //createTrackbar("Erode", "Display", &N_erode, 4, erode_TB );
@@ -347,7 +352,7 @@ int main( int argc, char** argv )
   
   
   while (c!=1048586) c=waitKey(0);
-  
+  destroyAllWindows();
   
   
   cout<<"\n     Do you want to use the predictive tracker? (Useful if your particles are more or less deterministic) (0 or 1) >> ";
@@ -385,8 +390,10 @@ int main( int argc, char** argv )
       cvtColor(blurred_img, blurred_img, CV_RGB2GRAY);
       Laplacian(blurred_img,LOG_img,CV_32F,derivative_size,-1,120,BORDER_DEFAULT);
       threshold(LOG_img,thresholded,_threshold,255,THRESH_BINARY);
-      erode(thresholded,thresholded,element,Point(-1,-1),N_erode,BORDER_DEFAULT);
+      //erode(thresholded,thresholded,element,Point(-1,-1),N_erode,BORDER_DEFAULT);
       dilate(thresholded,thresholded,element,Point(-1,-1),N_dilate,BORDER_DEFAULT);
+
+
       find_particules(thresholded,0,points[i]);
 
       if (mode_test) //update the image in visualisation (soooo slow…)
@@ -399,8 +406,10 @@ int main( int argc, char** argv )
 		  circle(tamp,Point(points[i][j].center_position()[1],points[i][j].center_position()[0]),sqrt(points[i][j].area()),Scalar(0xFFFF),1,8,0);
 		}}
 
+	  //imshow("Display",tamp);
 	  imshow("Display",tamp);
 	  cv::waitKey(50);
+	  cout<<"  Frame N: "<<i<<"  Found: "<<points[i].size()<<" particles"<<endl;
 	}
   
       if (mode_low_ram)
