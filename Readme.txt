@@ -1,4 +1,4 @@
-Copyright 2014,2015 Thomas Combriat
+Copyright 2020,2019 Thomas Combriat
    This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,7 +16,12 @@ Copyright 2014,2015 Thomas Combriat
 Welcome to FAST (Fast and Simple Tracker)! FAST is a particle tracker developped in order to performe Particle tracking Velocimetry (PTV) developped by T. Combriat, PhD student at the LIPhy lab, Grenoble, France.
 
 
-
+///////////////
+DEP ON DEBIAN 10
+///////////////
+libopencv-dev 
+libboost-dev
+libboost-serialization-dev
 
 //////////////
 HOW TO INSTALL ON LINUX
