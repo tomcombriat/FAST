@@ -34,7 +34,7 @@ using namespace cv;
 using namespace std;
 
 //global variable
-int _threshold,area_max=1000,area_min=0,N_dilate=0,N_erode=0;
+int _threshold,area_max=1000,area_min=0,N_dilate=0,N_erode=0,max_threshold = 255;
 Mat thresholded,LOG_img,img;
 
 vector<Points> * points;   //This will contain all the points detected and will be passed to the link_particles function. Has to be global because of the OpenCV visualisation
@@ -46,9 +46,9 @@ vector<Points> * points;   //This will contain all the points detected and will 
 void threshold_TB(int, void *)   //Trackbar for the threshold
 {
   Mat tamp,element=getStructuringElement(MORPH_ELLIPSE,Size(3,3),Point(-1,-1));
-  threshold(LOG_img,thresholded,_threshold,255,THRESH_BINARY);
-    dilate(thresholded,tamp,element,Point(-1,-1),N_dilate,BORDER_DEFAULT);
-      erode(tamp,tamp,element,Point(-1,-1),N_erode,BORDER_DEFAULT);
+  threshold(LOG_img,thresholded,_threshold,max_threshold,THRESH_BINARY);
+  dilate(thresholded,tamp,element,Point(-1,-1),N_dilate,BORDER_DEFAULT);
+  erode(tamp,tamp,element,Point(-1,-1),N_erode,BORDER_DEFAULT);
   imshow("Display", tamp);
   points[0].clear();
   find_particules(tamp,0,points[0]);    
@@ -114,7 +114,7 @@ void erode_TB(int, void *)
   Mat element=getStructuringElement(MORPH_ELLIPSE,Size(3,3),Point(-1,-1));
 
   erode(thresholded,tamp,element,Point(-1,-1),N_erode,BORDER_DEFAULT);
-      dilate(tamp,tamp,element,Point(-1,-1),N_dilate,BORDER_DEFAULT);
+  dilate(tamp,tamp,element,Point(-1,-1),N_dilate,BORDER_DEFAULT);
   imshow("Display", tamp);
   points[0].clear();
   find_particules(tamp,0,points[0]);  
@@ -131,7 +131,7 @@ int main( int argc, char** argv )
   system("clear");
   try{
     system("mkdir archive");   //perhaps the directory is already created (p.e. if Fast was killed before the end of its execution (*PAN*)
-  }
+	   }
   catch(...)  
     {}
 
@@ -175,6 +175,11 @@ int main( int argc, char** argv )
 	    {
 	      mode_no_BG=true;
 	      cout<<  "\n     * NO BACKGROUD WILL BE USED *\n";
+	    }
+	  if (std::string(argv[i])=="-16bits") 
+	    {
+	      max_threshold = 65536;
+	      cout<<  "\n     * 16 BITS MODE *\n"; 
 	    }
 	}     
     }
@@ -314,7 +319,7 @@ int main( int argc, char** argv )
   if (mode_no_BG) GaussianBlur(img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
   else GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);  
 
-   cvtColor(blurred_img, blurred_img, CV_RGB2GRAY);   //convert to Grayscale for laplacian calculation
+  cvtColor(blurred_img, blurred_img, CV_RGB2GRAY);   //convert to Grayscale for laplacian calculation
   Laplacian(blurred_img,LOG_img,CV_32F,derivative_size,-1,120,BORDER_DEFAULT);
 
 
@@ -323,15 +328,15 @@ int main( int argc, char** argv )
 
   
   namedWindow( "Display", WINDOW_NORMAL);// Create a window for display.
-  createTrackbar("Threshold_set", "Display", &_threshold, 255, threshold_TB );
- createTrackbar("Dilate", "Display", &N_dilate, 4, dilate_TB );
- //createTrackbar("Erode", "Display", &N_erode, 4, erode_TB );
+  createTrackbar("Threshold_set", "Display", &_threshold, max_threshold, threshold_TB );
+  createTrackbar("Dilate", "Display", &N_dilate, 4, dilate_TB );
+  //createTrackbar("Erode", "Display", &N_erode, 4, erode_TB );
  
   threshold_TB(_threshold,0);
 
 
 
-  while (c!=1048586) c=waitKey(0);   //1048586 is the "enter" key code 
+  while (c==0) c=waitKey(0);   //1048586 is the "enter" key code 
 
   c=0;
 
@@ -351,7 +356,7 @@ int main( int argc, char** argv )
   createTrackbar("Area max", "Display", &area_max, 1000, area_TB_max);
   
   
-  while (c!=1048586) c=waitKey(0);
+  while (c==0) c=waitKey(0);
   destroyAllWindows();
   
   
@@ -389,7 +394,7 @@ int main( int argc, char** argv )
       else GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
       cvtColor(blurred_img, blurred_img, CV_RGB2GRAY);
       Laplacian(blurred_img,LOG_img,CV_32F,derivative_size,-1,120,BORDER_DEFAULT);
-      threshold(LOG_img,thresholded,_threshold,255,THRESH_BINARY);
+      threshold(LOG_img,thresholded,_threshold,max_threshold,THRESH_BINARY);
       //erode(thresholded,thresholded,element,Point(-1,-1),N_erode,BORDER_DEFAULT);
       dilate(thresholded,thresholded,element,Point(-1,-1),N_dilate,BORDER_DEFAULT);
 

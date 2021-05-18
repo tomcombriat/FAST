@@ -39,7 +39,7 @@ using namespace cv;
 using namespace std;
 
 //global variable
-int _threshold,area_max=1000,area_min=0;
+int _threshold,area_max=1000,area_min=0,max_threshold = 255
 Mat thresholded,LOG_img,img;
 
 vector<Points> * points;   //This will contain all the points detected and will be passed to the link_particles function. Has to be global because of the OpenCV visualisation
@@ -50,7 +50,7 @@ vector<Points> * points;   //This will contain all the points detected and will 
 
 void threshold_TB(int, void *)   //Trackbar for the threshold
 {
-  threshold(LOG_img,thresholded,_threshold,255,THRESH_BINARY);
+  threshold(LOG_img,thresholded,_threshold,max_threshold,THRESH_BINARY);
   imshow("Display", thresholded);
   points[0].clear();
   find_particules(thresholded,0,points[0]);
@@ -125,6 +125,7 @@ int main( int argc, char** argv )
   bool mode_low_ram=false;
   bool mode_inv=false;
   bool mode_no_BG=false;
+  bool mode_16bits=false;
 
   /* Check for passed arguments */
   if (argc>3)
@@ -150,6 +151,12 @@ int main( int argc, char** argv )
 	    {
 	      mode_no_BG=true;
 	      cout<<  "\n     * NO BACKGROUD WILL BE USED *\n";
+	    }
+	  	  if (std::string(argv[i])=="-16bits") 
+	    {
+	      mode_16bits=true;
+	      max_threshold = 65536;
+	      cout<<  "\n     * 16 BITS MODE *\n";
 	    }
 	}     
     }
