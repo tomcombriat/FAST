@@ -34,7 +34,8 @@ using namespace cv;
 using namespace std;
 
 //global variable
-int _threshold,area_max=1000,area_min=0,N_dilate=0,N_erode=0,max_threshold = 255;
+int _threshold,area_max=1000,area_min=0,N_dilate=0,N_erode=0;
+double  max_threshold = 255, min_threshold = 0;
 Mat thresholded,LOG_img,img;
 
 vector<Points> * points;   //This will contain all the points detected and will be passed to the link_particles function. Has to be global because of the OpenCV visualisation
@@ -46,7 +47,7 @@ vector<Points> * points;   //This will contain all the points detected and will 
 void threshold_TB(int, void *)   //Trackbar for the threshold
 {
   Mat tamp,element=getStructuringElement(MORPH_ELLIPSE,Size(3,3),Point(-1,-1));
-  threshold(LOG_img,thresholded,_threshold,max_threshold,THRESH_BINARY);
+  threshold(LOG_img,thresholded,_threshold, max_threshold,THRESH_BINARY);
   dilate(thresholded,tamp,element,Point(-1,-1),N_dilate,BORDER_DEFAULT);
   erode(tamp,tamp,element,Point(-1,-1),N_erode,BORDER_DEFAULT);
   imshow("Display", tamp);
@@ -326,7 +327,10 @@ int main( int argc, char** argv )
 
   cout << "\n  Use the cursor on the image to set the threshold (press enter when you are done)\n";
 
-  
+
+  /* Finding the maximum of the image */
+  minMaxLoc(LOG_img, &min_threshold, &max_threshold);
+  cout << max_threshold << endl;
   namedWindow( "Display", WINDOW_NORMAL);// Create a window for display.
   createTrackbar("Threshold_set", "Display", &_threshold, max_threshold, threshold_TB );
   createTrackbar("Dilate", "Display", &N_dilate, 4, dilate_TB );
