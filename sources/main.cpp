@@ -330,7 +330,6 @@ int main( int argc, char** argv )
 
   /* Finding the maximum of the image */
   minMaxLoc(LOG_img, &min_threshold, &max_threshold);
-  cout << max_threshold << endl;
   namedWindow( "Display", WINDOW_NORMAL);// Create a window for display.
   createTrackbar("Threshold_set", "Display", &_threshold, max_threshold, threshold_TB );
   createTrackbar("Dilate", "Display", &N_dilate, 4, dilate_TB );
