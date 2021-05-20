@@ -317,6 +317,7 @@ int main( int argc, char** argv )
   if (mode_inv && !mode_no_BG)  bitwise_not(img,img);
   if (!mode_inv && mode_no_BG)  bitwise_not(img,img);  //As any background is substracted, the image is not in the good dynamic
 
+  img.convertTo(img, CV_32F);
   if (mode_no_BG) GaussianBlur(img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
   else GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);  
 
@@ -393,6 +394,7 @@ int main( int argc, char** argv )
 	}
 
       points[i].reserve(points[i-1].size());  //for speed purposes
+      img.convertTo(img, CV_32F);
       if (mode_no_BG) GaussianBlur(img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
       else GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
       cvtColor(blurred_img, blurred_img, CV_RGB2GRAY);
