@@ -443,14 +443,21 @@ int main( int argc, char** argv )
   log<<"\nThreshold : "<<_threshold<<"\nArea min/max : "<<area_min<<"/"<<area_max<<endl;
 
 
-  
-  std::ifstream ifs("archive/ar");  //open archive for linking
-  boost::archive::text_iarchive ia(ifs);
 
-  sortie<<"#Tracks_ID X Y T size"<<endl;
+    sortie<<"#Tracks_ID X Y T size"<<endl;
   
   cout<<endl<<endl<<"  Linking particles..."<<endl;
-  link_particules(points,tracks,search_radius, NB_Frame,area_min,area_max,gap,0,flow_y,flow_x,ia,mode_low_ram,sortie);
+  
+  if (mode_low_ram)
+    {
+  std::ifstream ifs("archive/ar");  //open archive for linking
+  boost::archive::text_iarchive ia(ifs);
+  link_particules(points,tracks,search_radius, NB_Frame,area_min,area_max,gap,0,flow_y,flow_x,ia,mode_low_ram);
+    }
+  
+
+  if (!mode_low_ram) link_particules(points,tracks,search_radius, NB_Frame,area_min,area_max,gap,0,flow_y,flow_x);
+
 
   cout<<endl<<endl<<"Done!  "<<tracks.size()<<" tracks have been created!"<<endl;
 

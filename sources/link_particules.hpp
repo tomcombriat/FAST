@@ -32,7 +32,8 @@ Copyright 2014,2015,2016 Thomas Combriat
 double cost_function(double * current, double * expected); 
 double cost_function(double * expected, Points & candidate,int size);
 bool in_area(double * current, double * expected, double radius); 
-void link_particules(std::vector<Points> * & points,std::vector<Track> & tracks, double search_radius, int NB_frames, int size_min, int size_max, int gap, unsigned int strategy,double flow_x, double flow_y,boost::archive::text_iarchive & ia,bool mode_low_ram,std::fstream & sortie);
+void link_particules(std::vector<Points> * & points,std::vector<Track> & tracks, double search_radius, int NB_frames, int size_min, int size_max, int gap, unsigned int strategy,double flow_x, double flow_y,boost::archive::text_iarchive & ia,bool mode_low_ram);
+void link_particules(std::vector<Points> * & points,std::vector<Track> & tracks, double search_radius, int NB_frames, int size_min, int size_max, int gap, unsigned int strategy,double flow_x, double flow_y);
 
 
 
