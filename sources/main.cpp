@@ -316,14 +316,17 @@ int main( int argc, char** argv )
   
   if (mode_inv && !mode_no_BG)  bitwise_not(img,img);
   if (!mode_inv && mode_no_BG)  bitwise_not(img,img);  //As any background is substracted, the image is not in the good dynamic
-
   img.convertTo(img, CV_32F);
   if (mode_no_BG) GaussianBlur(img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
-  else GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);  
-
+  else
+    {
+      mean_img.convertTo(mean_img,CV_32F);
+      GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
+    }
+ 
   cvtColor(blurred_img, blurred_img, CV_RGB2GRAY);   //convert to Grayscale for laplacian calculation
   Laplacian(blurred_img,LOG_img,CV_32F,derivative_size,-1,120,BORDER_DEFAULT);
-
+ 
 
 
   cout << "\n  Use the cursor on the image to set the threshold (press enter when you are done)\n";
