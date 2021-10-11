@@ -4,12 +4,12 @@ Copyright 2021,2020,2019 Thomas Combriat
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
+   This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
@@ -51,5 +51,11 @@ FAST uses cmake and opencv, after installing these softwares you can compile the
 
 
 
+# Publications
+FAST has been used in the following publications:
 
-
+ - Bertin, N., Spelman, T. A., Combriat, T., Hue, H., Stéphan, O., Lauga, E., & Marmottant, P. (2017). Bubble-based acoustic micropropulsors: active surfaces and mixers. Lab on a Chip, 17(8), 1515-1528.
+ - Busek, M., Nøvik, S., Aizenshtadt, A., Amirola-Martinez, M., Combriat, T., Grünzner, S., & Krauss, S. (2021). Thermoplastic Elastomer (TPE)–Poly (Methyl Methacrylate)(PMMA) Hybrid Devices for Active Pumping PDMS-Free Organ-on-a-Chip Systems. Biosensors, 11(5), 162.
+ - Combriat, T., Mekki-Berrada, F., Thibault, P., & Marmottant, P. (2018). Trapping and exclusion zones in complex streaming patterns around a large assembly of microfluidic bubbles under ultrasound. Physical Review Fluids, 3(1), 013602.
+ - Spelman, T. A., Lauga, E. J. M., Hue, H., Combriat, T., Bertin, N., Stéphan, O., & Marmottant, P. (2017). Bubble-based acoustic micropropulsors: active surfaces and mixers.
+ - Spelman, T. A., Stephan, O., & Marmottant, P. (2020). Multi-directional bubble generated streaming flows. Ultrasonics, 102, 106054.
