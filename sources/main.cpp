@@ -271,11 +271,12 @@ int main( int argc, char** argv )
 	       
 
 	      //Computing the mean of all images
-	      tamp=tamp*1./NB_Frame;  
+	      //tamp=tamp*1./NB_Frame;  
 	      if (i==0) mean_img=tamp.clone();
 	      else mean_img+=tamp.clone();
 	      i++;
 	    }
+	  mean_img/=NB_Frame;
 
 	  //Writing the background to a file in order to reuse it
 	  vector<int> compression_params;
@@ -300,8 +301,10 @@ int main( int argc, char** argv )
 
 
   cout<<"\n\n  LOG detector: informations required:\n";
-  cout<<"    Blur size (positive and odd) >>  ";
+  cout<<"    Estimated particle size (positive) >>  ";
   cin>>kernel_size;
+  kernel_size = kernel_size*kernel_size/2;
+  if (kernel_size % 2 == 0) kernel_size++;
   cout<<"    Derivative size (positive and odd) >>  ";
   cin>>derivative_size;
   cout<<"    Search radius (positive) >>  ";
