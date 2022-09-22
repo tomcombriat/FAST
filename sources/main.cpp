@@ -224,8 +224,8 @@ int main( int argc, char** argv )
   if (video.isOpened())
     {
       cout<<"Source file opened!"<<endl<<"     Infos :"<<endl;
-      cout<<"w="<<video.get(CV_CAP_PROP_FRAME_WIDTH)<<"  H="<<video.get(CV_CAP_PROP_FRAME_HEIGHT)<<"  FPS="<<video.get(CV_CAP_PROP_FPS)<<endl;      
-      video.set(CV_CAP_PROP_FRAME_WIDTH,video.get(CV_CAP_PROP_FRAME_WIDTH)+10);
+      cout<<"w="<<video.get(cv::CAP_PROP_FRAME_WIDTH)<<"  H="<<video.get(cv::CAP_PROP_FRAME_HEIGHT)<<"  FPS="<<video.get(cv::CAP_PROP_FPS)<<endl;      
+      video.set(cv::CAP_PROP_FRAME_WIDTH,video.get(cv::CAP_PROP_FRAME_WIDTH)+10);
     }
   else
     {
@@ -235,7 +235,7 @@ int main( int argc, char** argv )
 
   
 
-  int NB_Frame=video.get(CV_CAP_PROP_FRAME_COUNT); 
+  int NB_Frame=video.get(cv::CAP_PROP_FRAME_COUNT); 
   cout<<NB_Frame<<" images to analyse"<<endl;
   points=new vector<Points>[NB_Frame];
 
@@ -280,7 +280,7 @@ int main( int argc, char** argv )
 
 	  //Writing the background to a file in order to reuse it
 	  vector<int> compression_params;
-	  compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);
+	  compression_params.push_back(cv::IMWRITE_JPEG_QUALITY);
 	  compression_params.push_back(100);
 	  imwrite ("background.jpg",mean_img,compression_params);
 
@@ -327,7 +327,7 @@ int main( int argc, char** argv )
       GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
     }
  
-  cvtColor(blurred_img, blurred_img, CV_RGB2GRAY);   //convert to Grayscale for laplacian calculation
+  cvtColor(blurred_img, blurred_img, cv::COLOR_RGB2GRAY);   //convert to Grayscale for laplacian calculation
   Laplacian(blurred_img,LOG_img,CV_32F,derivative_size,-1,120,BORDER_DEFAULT);
  
 
@@ -403,7 +403,7 @@ int main( int argc, char** argv )
       img.convertTo(img, CV_32F);
       if (mode_no_BG) GaussianBlur(img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
       else GaussianBlur(mean_img-img,blurred_img,Size(kernel_size,kernel_size),0,0,BORDER_DEFAULT);
-      cvtColor(blurred_img, blurred_img, CV_RGB2GRAY);
+      cvtColor(blurred_img, blurred_img, cv::COLOR_RGB2GRAY);
       Laplacian(blurred_img,LOG_img,CV_32F,derivative_size,-1,120,BORDER_DEFAULT);
       threshold(LOG_img,thresholded,_threshold,max_threshold,THRESH_BINARY);
       //erode(thresholded,thresholded,element,Point(-1,-1),N_erode,BORDER_DEFAULT);
