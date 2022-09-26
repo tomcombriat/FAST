@@ -60,6 +60,7 @@ void area_TB_min(int, void *)   //Trackbar for the area min of a particle
 {
 
   Mat tamp=img.clone();
+  tamp.convertTo(tamp,CV_8U);
 
   for (int i=0;i<points[0].size();i++)
     {
@@ -76,7 +77,8 @@ void area_TB_min(int, void *)   //Trackbar for the area min of a particle
 void area_TB_max(int, void *)  //Idem for the area max
 {
 
-  Mat tamp=img.clone();
+  Mat tamp=img.clone() ;
+  tamp.convertTo(tamp,CV_8U);
   //cout<<   "S="<<points[0].size()<<endl;
   for (int i=0;i<points[0].size();i++)
     {
